@@ -33,10 +33,7 @@ function collectPoints(
       const dg = right.data[idx + 1] - left.data[idx + 1];
       const db = right.data[idx + 2] - left.data[idx + 2];
       if (dr || dg || db) {
-        points.push({
-          x: x,
-          y: y
-        });
+        points.push([x, y]);
       }
     }
   }

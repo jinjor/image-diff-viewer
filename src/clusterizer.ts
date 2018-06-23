@@ -1,11 +1,17 @@
+import { Point } from "./types";
 const kmeans = require("node-kmeans");
 
-export function run(points: any[], clusters: number): Promise<any> {
-  const vectors = points.map(point => {
-    return [point.x, point.y];
-  });
+export async function run(
+  points: Point[],
+  clusters: number
+): Promise<Point[][]> {
+  const results = await clusterize(points, clusters);
+  return results.map(result => result.cluster);
+}
+
+function clusterize(points: Point[], clusters: number): Promise<any[]> {
   return new Promise((resolve, reject) => {
-    kmeans.clusterize(vectors, { k: clusters }, (err, res) => {
+    kmeans.clusterize(points, { k: clusters }, (err, res) => {
       if (err) {
         reject(err);
       } else {

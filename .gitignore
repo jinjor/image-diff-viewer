@@ -4,8 +4,6 @@ yarn-error.log
 
 # generated
 .cache
-tmp1
-tmp2
 dist
 index.html
 

@@ -10,6 +10,11 @@
     "pngjs": "^3.3.3"
   },
   "devDependencies": {
-    "@types/node": "^10.3.4"
+    "@types/node": "^10.3.4",
+    "typescript": "^2.9.2"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc -p . -w"
   }
 }

@@ -6,10 +6,7 @@ export interface FileDiff {
   change?: FileChange;
 }
 
-export interface Point {
-  x: number;
-  y: number;
-}
+export type Point = number[];
 
 export class Rect {
   constructor(public left, public top, public right, public bottom) {}
