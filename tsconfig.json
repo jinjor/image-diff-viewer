@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "sourceMap": true,
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": ["node"],
+    "pretty": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "declaration": false,
+    "removeComments": true,
+    "noUnusedLocals": false,
+    "noImplicitReturns": true,
+    "listEmittedFiles": false,
+    "listFiles": false,
+    "preserveWatchOutput": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": []
+}

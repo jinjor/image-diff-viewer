@@ -1,0 +1,15 @@
+{
+  "name": "image-diff-viewer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "argv": "^0.0.2",
+    "glob": "^7.1.2",
+    "node-kmeans": "^1.1.8",
+    "pngjs": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "^10.3.4"
+  }
+}
