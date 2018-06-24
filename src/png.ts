@@ -42,6 +42,10 @@ function collectPoints(
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const idx = (width * y + x) << 2;
+      if (right.data[idx] === undefined || left.data[idx] === undefined) {
+        points.push([x, y]);
+        continue;
+      }
       const dr = right.data[idx] - left.data[idx];
       const dg = right.data[idx + 1] - left.data[idx + 1];
       const db = right.data[idx + 2] - left.data[idx + 2];
