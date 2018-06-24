@@ -5,8 +5,10 @@ export async function run(
   points: Point[],
   clusters: number
 ): Promise<Point[][]> {
-  if (!points.length) {
-    return [];
+  if (points.length < clusters) {
+    return points.map(point => {
+      return [point];
+    });
   }
   const results = await clusterize(points, clusters);
   return results.map(result => result.cluster);

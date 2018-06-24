@@ -95,3 +95,6 @@ function mergeRect(r1: Rect, r2: Rect): Rect {
     Math.max(r1.bottom, r2.bottom)
   );
 }
+export const testMergeRects = mergeRects;
+export const testMergeRect = mergeRect;
+export const testGetRects = getRects;

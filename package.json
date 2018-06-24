@@ -13,12 +13,15 @@
     "pngjs": "^3.3.3"
   },
   "devDependencies": {
+    "@types/mocha": "^5.2.3",
     "@types/node": "^10.3.4",
+    "mocha": "^5.2.0",
     "typescript": "^2.9.2"
   },
   "scripts": {
     "build": "tsc -p .",
     "watch": "tsc -p . -w",
-    "test": "npm run build"
+    "pretest": "npm run build",
+    "test": "mocha ./dist/test/*.js"
   }
 }
