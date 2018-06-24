@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "bin": {
+    "image-diff-viewer": "./dist/index.js"
+  },
   "dependencies": {
     "argv": "^0.0.2",
     "glob": "^7.1.2",
@@ -15,6 +18,7 @@
   },
   "scripts": {
     "build": "tsc -p .",
-    "watch": "tsc -p . -w"
+    "watch": "tsc -p . -w",
+    "test": "npm run build"
   }
 }

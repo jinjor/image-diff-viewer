@@ -1,5 +1,8 @@
 # image-diff-viewer
 
+[![Build Status](https://travis-ci.org/jinjor/image-diff-viewer.svg)](https://travis-ci.org/jinjor/image-diff-viewer)
+
+
 WIP
 
 ```bash
