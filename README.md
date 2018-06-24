@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/jinjor/image-diff-viewer.svg)](https://travis-ci.org/jinjor/image-diff-viewer)
 
-## DEMO
+Reports how images have been changed.
 
-[Demo]()
+![](./docs/example.png)
 
 ## Usage
 
