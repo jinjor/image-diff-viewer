@@ -1,12 +1,25 @@
-export type Files = { [s: string]: FileDiff };
+export type FilePairs = { [s: string]: FilePair };
+export type FileDiffs = { [s: string]: FileDiff };
 
-export interface FileDiff {
+export interface FilePair {
   left?: string;
   right?: string;
-  change?: FileChange;
 }
-
-export type Point = number[];
+export type FileDiffType = "removed" | "added" | "updated" | "unchanged";
+export class FileDiff {
+  constructor(public left: Image, public right: Image, public rects: Rect[]) {}
+  get type(): FileDiffType {
+    if (this.left && !this.right) {
+      return "removed";
+    } else if (!this.left && this.right) {
+      return "added";
+    } else if (this.rects.length) {
+      return "updated";
+    } else {
+      return "unchanged";
+    }
+  }
+}
 
 export class Rect {
   constructor(public left, public top, public right, public bottom) {}
@@ -18,25 +31,16 @@ export class Rect {
   }
 }
 
-export type FileChange = Unchanged | Added | Removed | Updated;
-interface Unchanged {
-  type: "unchanged";
-}
-interface Added {
-  type: "added";
-}
-interface Removed {
-  type: "removed";
-}
-interface Updated {
-  type: "updated";
-  rects: Rect[];
-}
-
-export interface ImageChange {
+export interface Image {
+  path: string;
   width: number;
   height: number;
+}
+export interface ImageChange {
+  left: Image;
+  right: Image;
   points: Point[];
 }
+export type Point = number[];
 
 export type CompareImage = (leftFile: string, rightFile: string) => ImageChange;

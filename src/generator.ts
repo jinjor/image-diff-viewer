@@ -1,62 +1,55 @@
-import { FileDiff, FileChange, Files } from "./types";
+import { FileDiff, FileDiffs, Image, Rect } from "./types";
+import * as fs from "fs";
 
-export function generate(files: Files): string {
+export function generate(files: FileDiffs): string {
+  const css = `${__dirname}/../assets/style.css`;
+  const style = fs.readFileSync(css, "utf8");
   let html = `
 <h1>Diff</h1>
 <style>
-.row {
-  display: flex;
-  transform: scale(.5);
-  transform-origin: top left;
-}
-.title {}
-.image-container {
-  position: relative;
-}
-.rect {
-  position: absolute;
-  border: solid 2px red;
-}
+${style}
 </style>
 `;
   for (let file in files) {
-    const info = files[file];
-    html += generateRow(file, info);
+    const fileDiff = files[file];
+    html += generateRow(file, fileDiff);
   }
   return html;
 }
 
-function generateRow(file: string, info: FileDiff): string {
-  if (info.change.type === "unchanged") {
+function generateRow(file: string, fileDiff: FileDiff): string {
+  if (fileDiff.type === "unchanged") {
     return "";
   }
   let html = "";
-  html += `<div class="title">${file}</div>\n`;
-  html += `<div class="row">\n`;
-  html += generateColumn(info.left, info.change);
-  html += generateColumn(info.right, info.change);
+  html += `<h2 class="title">${file}</h2>\n`;
+  html += `<div class="row ${fileDiff.type}">\n`;
+  html += generateColumn(fileDiff.left, fileDiff.rects);
+  html += generateColumn(fileDiff.right, fileDiff.rects);
   html += `</div>\n`;
   return html;
 }
 
-function generateColumn(src: string, change: FileChange): string {
+const MAX_IMAGE_WIDTH = 500;
+function generateColumn(image: Image, rects: Rect[]): string {
   let html = "";
-  html += `  <div class="col image-container">\n`;
-  html += `    <img class="image" src="${src}">\n`;
-  if (change.type === "updated") {
-    for (let rect of change.rects) {
-      html += generateRectangle(rect);
+  html += `  <div class="col">`;
+  if (image) {
+    const width = Math.min(image.width, MAX_IMAGE_WIDTH);
+    const ratio = width / image.width;
+    html += `    <div class="image-container">\n`;
+    html += `      <img class="image" width="${width}" src="${image.path}">\n`;
+    for (let rect of rects) {
+      html += generateRectangle(rect, ratio);
     }
+    html += `    </div>\n`;
   }
   html += `  </div>\n`;
   return html;
 }
 
-function generateRectangle(rect): string {
-  if (!rect) {
-    return "";
-  }
-  return `    <div class="rect" style="top: ${rect.top}px; left: ${
-    rect.left
-  }px; width: ${rect.width}px; height: ${rect.height}px;"></div>\n`;
+function generateRectangle(rect: Rect, ratio: number): string {
+  return `    <div class="rect" style="top: ${rect.top *
+    ratio}px; left: ${rect.left * ratio}px; width: ${rect.width *
+    ratio}px; height: ${rect.height * ratio}px;"></div>\n`;
 }

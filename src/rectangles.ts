@@ -16,9 +16,14 @@ async function makeRects(
   clusters: number,
   padding: number
 ): Promise<Rect[]> {
+  if (!change.left || !change.right) {
+    return [];
+  }
   const results = await clusterizer.run(change.points, clusters);
+  const width = Math.max(change.left.width, change.right.width);
+  const height = Math.max(change.left.height, change.right.height);
   return results.map(vectors => {
-    return makeRect(change.width, change.height, vectors, padding);
+    return makeRect(width, height, vectors, padding);
   });
 }
 

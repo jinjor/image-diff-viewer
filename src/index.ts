@@ -1,6 +1,7 @@
 import * as generator from "./generator";
 import * as files_ from "./files";
 import * as fs from "fs";
+import { FilePairs, FileDiffs } from "./types";
 
 const argv = require("argv");
 argv.option({
@@ -29,13 +30,14 @@ async function run(args): Promise<void> {
   const padding = args.options.padding || 20;
   const clusters = args.options.clusters || 4;
   const output = args.options.output;
-  const files = files_.getFiles(dir1, dir2);
-  for (let file in files) {
-    const info = files[file];
-    const change = await files_.compareFile(info, clusters, padding);
-    info.change = change;
+  const filePairs: FilePairs = files_.getFiles(dir1, dir2);
+  const fileDiffs: FileDiffs = {};
+  for (let file in filePairs) {
+    const filePair = filePairs[file];
+    const fileDiff = await files_.compareFile(filePair, clusters, padding);
+    fileDiffs[file] = fileDiff;
   }
-  const html = generator.generate(files);
+  const html = generator.generate(fileDiffs);
   if (output) {
     fs.writeFileSync(output, html);
   } else {

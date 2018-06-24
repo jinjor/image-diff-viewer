@@ -4,17 +4,30 @@ import { Point, CompareImage } from "./types";
 const PNG = require("pngjs").PNG;
 
 export const compareImage: CompareImage = (
-  leftFile: string,
-  rightFile: string
+  leftFile?: string,
+  rightFile?: string
 ) => {
-  const left = PNG.sync.read(fs.readFileSync(leftFile));
-  const right = PNG.sync.read(fs.readFileSync(rightFile));
-  const width = Math.max(left.width, right.width);
-  const height = Math.max(left.height, right.height);
-  const points = collectPoints(left, right, width, height);
+  const left = leftFile && PNG.sync.read(fs.readFileSync(leftFile));
+  const right = rightFile && PNG.sync.read(fs.readFileSync(rightFile));
+  const leftInfo = left && {
+    path: leftFile,
+    width: left.width,
+    height: left.height
+  };
+  const rightInfo = right && {
+    path: rightFile,
+    width: right.width,
+    height: right.height
+  };
+  let points = [];
+  if (left && right) {
+    const width = Math.max(left.width, right.width);
+    const height = Math.max(left.height, right.height);
+    points = collectPoints(left, right, width, height);
+  }
   return {
-    width,
-    height,
+    left: leftInfo,
+    right: rightInfo,
     points
   };
 };
