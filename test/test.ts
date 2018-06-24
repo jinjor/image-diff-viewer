@@ -1,8 +1,103 @@
 import "mocha";
 import * as assert from "assert";
+import * as fs from "fs";
+import * as Path from "path";
+import * as puppeteer from "puppeteer";
 import * as rectangles from "../src/rectangles";
+import * as index from "../src/index";
 import { Rect } from "../src/types";
 
+const tmpDir = Path.resolve(__dirname, "../../tmp");
+const imageWidth = 600;
+const imageHeight = 400;
+
+function createHtml(file: string, marks: number[][]) {
+  const rectWidth = 10;
+  const rectHeight = 10;
+  const interval = 30;
+  const rows = imageHeight / interval;
+  const cols = imageWidth / interval;
+  const dots = [];
+  for (let r = 0; r < rows; r++) {
+    dots[r] = [];
+    for (let c = 0; c < cols; c++) {
+      dots[r][c] = {
+        top: r * interval,
+        left: c * interval,
+        colored: false
+      };
+    }
+  }
+  for (let mark of marks) {
+    const r = mark[0];
+    const c = mark[1];
+    dots[r][c].colored = true;
+  }
+  let html = `<style>
+    .dots {
+        background-color: #eee;
+    }
+    .dot {
+        position:absolute;
+        background-color: #ccf;
+        width: ${rectWidth}px;
+        height: ${rectHeight}px;
+    }
+    .dot.colored {
+        background-color: #fc8;
+    }
+    </style>
+    `;
+  html += `<div class="dots">\n`;
+  for (let r in dots) {
+    const row = dots[r];
+    for (let c in row) {
+      const dot = row[c];
+      const className = dot.colored ? "colored" : "";
+      const style = `left: ${dot.left}px; top: ${dot.top}px;`;
+      html += `  <div class="dot ${className}" style="${style}"></div>\n`;
+    }
+  }
+  html += `</div>\n`;
+  if (!fs.existsSync(tmpDir)) {
+    fs.mkdirSync(tmpDir);
+  }
+  fs.writeFileSync(file, html);
+}
+
+async function makeImageFromHtml(
+  page: any,
+  html: string,
+  image: string
+): Promise<void> {
+  await page.goto(`file://${html}`);
+  await page.screenshot({ path: image });
+}
+
+describe("index", function() {
+  const leftHtml = Path.resolve(tmpDir, "left.html");
+  const rightHtml = Path.resolve(tmpDir, "right.html");
+  const leftImage = Path.resolve(tmpDir, "left.png");
+  const rightImage = Path.resolve(tmpDir, "right.png");
+  before(async function() {
+    createHtml(leftHtml, []);
+    createHtml(rightHtml, [[2, 2], [2, 3], [3, 11], [6, 8], [10, 17]]);
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setViewport({
+      width: imageWidth,
+      height: imageHeight
+    });
+    await makeImageFromHtml(page, leftHtml, leftImage);
+    await makeImageFromHtml(page, rightHtml, rightImage);
+    await browser.close();
+  });
+  it("should work", async function() {
+    await index.run(leftImage, rightImage, {
+      output: Path.resolve(tmpDir, "result.html")
+    });
+  });
+});
 describe("rectangles", function() {
   describe("#mergeRect()", function() {
     it("should make a rectangle that contains both inputs", function() {

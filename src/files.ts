@@ -1,11 +1,14 @@
+import * as Path from "path";
 import * as glob from "glob";
 import * as png from "./png";
 import * as rectangles from "./rectangles";
 import { FilePairs, FilePair, FileDiff } from "./types";
 
 export function getFilePairs(file1: string, file2: string): FilePairs {
+  const name1 = `${Path.relative(".", file1)}`;
+  const name2 = `${Path.relative(".", file2)}`;
   return {
-    [`${file1} - ${file2}`]: {
+    [`${name1} - ${name2}`]: {
       left: file1,
       right: file2
     }
@@ -31,7 +34,7 @@ function collectFilePairs(
   });
   for (let file of files) {
     filePairs[file] = filePairs[file] || {};
-    filePairs[file][field] = `${dir}/${file}`;
+    filePairs[file][field] = Path.resolve(dir, file);
   }
 }
 

@@ -1,6 +1,8 @@
 import { FileDiff, FileDiffs, Image, Rect } from "./types";
 import * as fs from "fs";
 
+const maxImageWidth = 500;
+
 export function generate(files: FileDiffs, cssFile: string): string {
   const style = fs.readFileSync(cssFile, "utf8");
   let html = `
@@ -15,7 +17,7 @@ ${style}
     rows += generateRow(file, fileDiff);
   }
   if (!rows) {
-    html += "<p>No changes.</p>";
+    html += "<p>No changes.</p>\n";
   }
   html += rows;
   return html;
@@ -34,12 +36,11 @@ function generateRow(file: string, fileDiff: FileDiff): string {
   return html;
 }
 
-const MAX_IMAGE_WIDTH = 500;
 function generateColumn(image: Image, rects: Rect[]): string {
   let html = "";
-  html += `  <div class="col">`;
+  html += `  <div class="col">\n`;
   if (image) {
-    const width = Math.min(image.width, MAX_IMAGE_WIDTH);
+    const width = Math.min(image.width, maxImageWidth);
     const ratio = width / image.width;
     html += `    <div class="image-container">\n`;
     html += `      <img class="image" width="${width}" src="${image.path}">\n`;

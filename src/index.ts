@@ -1,61 +1,40 @@
 import * as generator from "./generator";
 import * as files_ from "./files";
 import * as fs from "fs";
+import * as Path from "path";
 import { FilePairs, FileDiffs } from "./types";
 
-const argv = require("argv");
-argv.option({
-  name: "recursive",
-  short: "r",
-  type: "boolean",
-  description: ""
-});
-argv.option({
-  name: "output",
-  short: "o",
-  type: "string",
-  description: ""
-});
-argv.option({
-  name: "padding",
-  type: "number",
-  description: ""
-});
-argv.option({
-  name: "clusters",
-  type: "number",
-  description: ""
-});
-argv.option({
-  name: "css",
-  type: "string",
-  description: ""
-});
-
-run(argv.run()).catch(e => {
-  console.error(e);
-});
-
-async function run(args): Promise<void> {
-  const target1 = args.targets[0];
-  const target2 = args.targets[1];
-  const padding = args.options.padding || 20;
-  const clusters = args.options.clusters || 4;
-  const recursive = args.options.recursive || false;
-  const output = args.options.output;
-  const css = args.options.css || `${__dirname}/../assets/style.css`;
-  const filePairs: FilePairs = recursive
-    ? files_.getFilePairsRecursively(target1, target2)
-    : files_.getFilePairs(target1, target2);
+export async function run(
+  left: string,
+  right: string,
+  options?: any
+): Promise<void> {
+  options = Object.assign(
+    {
+      recursive: false,
+      output: null,
+      padding: 20,
+      clusters: 4,
+      css: Path.resolve(__dirname, `../../assets/style.css`)
+    },
+    options
+  );
+  const filePairs: FilePairs = options.recursive
+    ? files_.getFilePairsRecursively(left, right)
+    : files_.getFilePairs(left, right);
   const fileDiffs: FileDiffs = {};
   for (let file in filePairs) {
     const filePair = filePairs[file];
-    const fileDiff = await files_.compareFile(filePair, clusters, padding);
+    const fileDiff = await files_.compareFile(
+      filePair,
+      options.clusters,
+      options.padding
+    );
     fileDiffs[file] = fileDiff;
   }
-  const html = generator.generate(fileDiffs, css);
-  if (output) {
-    fs.writeFileSync(output, html);
+  const html = generator.generate(fileDiffs, options.css);
+  if (options.output) {
+    fs.writeFileSync(options.output, html);
   } else {
     console.log(html);
   }
