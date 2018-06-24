@@ -3,23 +3,36 @@ import * as png from "./png";
 import * as rectangles from "./rectangles";
 import { FilePairs, FilePair, FileDiff } from "./types";
 
-export function getFilePairs(dir1: string, dir2: string): FilePairs {
-  const pngs1 = glob.sync("**/*.png", {
-    cwd: dir1
+export function getFilePairs(file1: string, file2: string): FilePairs {
+  return {
+    [`${file1} - ${file2}`]: {
+      left: file1,
+      right: file2
+    }
+  };
+}
+
+export function getFilePairsRecursively(dir1: string, dir2: string): FilePairs {
+  const q = "**/*.{png}";
+  const filePairs: FilePairs = {};
+  collectFilePairs(filePairs, q, dir1, "left");
+  collectFilePairs(filePairs, q, dir2, "right");
+  return filePairs;
+}
+
+function collectFilePairs(
+  filePairs: FilePairs,
+  q: string,
+  dir: string,
+  field: "left" | "right"
+): void {
+  const files = glob.sync(q, {
+    cwd: dir
   });
-  const pngs2 = glob.sync("**/*.png", {
-    cwd: dir2
-  });
-  const files: FilePairs = {};
-  for (let file of pngs1) {
-    files[file] = files[file] || {};
-    files[file].left = `${dir1}/${file}`;
+  for (let file of files) {
+    filePairs[file] = filePairs[file] || {};
+    filePairs[file][field] = `${dir}/${file}`;
   }
-  for (let file of pngs2) {
-    files[file] = files[file] || {};
-    files[file].right = `${dir2}/${file}`;
-  }
-  return files;
 }
 
 export async function compareFile(

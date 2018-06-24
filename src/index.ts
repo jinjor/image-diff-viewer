@@ -37,13 +37,8 @@ async function run(args): Promise<void> {
   const recursive = args.options.recursive || false;
   const output = args.options.output;
   const filePairs: FilePairs = recursive
-    ? files_.getFilePairs(target1, target2)
-    : {
-        [`${target1} - ${target2}`]: {
-          left: target1,
-          right: target2
-        }
-      };
+    ? files_.getFilePairsRecursively(target1, target2)
+    : files_.getFilePairs(target1, target2);
   const fileDiffs: FileDiffs = {};
   for (let file in filePairs) {
     const filePair = filePairs[file];
