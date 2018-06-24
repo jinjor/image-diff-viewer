@@ -1,5 +1,5 @@
+#! /usr/bin/env node
 import * as index from "./index";
-
 const argv = require("argv");
 argv.option({
   name: "recursive",
