@@ -2,6 +2,9 @@
   --removed-border-color: rgb(255, 100, 100);
   --added-border-color: rgb(0, 200, 0);
 }
+html {
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+}
 body {
   padding: 40px;
 }
@@ -9,7 +12,7 @@ body {
   display: grid;
   grid-template-columns: 500px 500px;
   grid-column-gap: 40px;
-  margin-bottom: 100px;
+  margin-bottom: 80px;
 }
 .col:nth-child(1) {
   grid-column: 1 / 2;

@@ -1,19 +1,23 @@
 import { FileDiff, FileDiffs, Image, Rect } from "./types";
 import * as fs from "fs";
 
-export function generate(files: FileDiffs): string {
-  const css = `${__dirname}/../assets/style.css`;
-  const style = fs.readFileSync(css, "utf8");
+export function generate(files: FileDiffs, cssFile: string): string {
+  const style = fs.readFileSync(cssFile, "utf8");
   let html = `
-<h1>Diff</h1>
+<h1>Changes</h1>
 <style>
 ${style}
 </style>
 `;
+  let rows = "";
   for (let file in files) {
     const fileDiff = files[file];
-    html += generateRow(file, fileDiff);
+    rows += generateRow(file, fileDiff);
   }
+  if (!rows) {
+    html += "<p>No changes.</p>";
+  }
+  html += rows;
   return html;
 }
 

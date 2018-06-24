@@ -13,20 +13,20 @@ export function getFilePairs(file1: string, file2: string): FilePairs {
 }
 
 export function getFilePairsRecursively(dir1: string, dir2: string): FilePairs {
-  const q = "**/*.{png}";
+  const pattern = "**/*.png";
   const filePairs: FilePairs = {};
-  collectFilePairs(filePairs, q, dir1, "left");
-  collectFilePairs(filePairs, q, dir2, "right");
+  collectFilePairs(filePairs, pattern, dir1, "left");
+  collectFilePairs(filePairs, pattern, dir2, "right");
   return filePairs;
 }
 
 function collectFilePairs(
   filePairs: FilePairs,
-  q: string,
+  pattern: string,
   dir: string,
   field: "left" | "right"
 ): void {
-  const files = glob.sync(q, {
+  const files = glob.sync(pattern, {
     cwd: dir
   });
   for (let file of files) {

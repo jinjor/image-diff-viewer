@@ -7,22 +7,29 @@ const argv = require("argv");
 argv.option({
   name: "recursive",
   short: "r",
-  type: "boolean"
+  type: "boolean",
+  description: ""
 });
 argv.option({
   name: "output",
   short: "o",
-  type: "string"
+  type: "string",
+  description: ""
 });
 argv.option({
   name: "padding",
-  short: "p",
-  type: "number"
+  type: "number",
+  description: ""
 });
 argv.option({
   name: "clusters",
-  short: "c",
-  type: "number"
+  type: "number",
+  description: ""
+});
+argv.option({
+  name: "css",
+  type: "string",
+  description: ""
 });
 
 run(argv.run()).catch(e => {
@@ -36,6 +43,7 @@ async function run(args): Promise<void> {
   const clusters = args.options.clusters || 4;
   const recursive = args.options.recursive || false;
   const output = args.options.output;
+  const css = args.options.css || `${__dirname}/../assets/style.css`;
   const filePairs: FilePairs = recursive
     ? files_.getFilePairsRecursively(target1, target2)
     : files_.getFilePairs(target1, target2);
@@ -45,7 +53,7 @@ async function run(args): Promise<void> {
     const fileDiff = await files_.compareFile(filePair, clusters, padding);
     fileDiffs[file] = fileDiff;
   }
-  const html = generator.generate(fileDiffs);
+  const html = generator.generate(fileDiffs, css);
   if (output) {
     fs.writeFileSync(output, html);
   } else {
