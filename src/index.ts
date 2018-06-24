@@ -5,6 +5,11 @@ import { FilePairs, FileDiffs } from "./types";
 
 const argv = require("argv");
 argv.option({
+  name: "recursive",
+  short: "r",
+  type: "boolean"
+});
+argv.option({
   name: "output",
   short: "o",
   type: "string"
@@ -25,12 +30,20 @@ run(argv.run()).catch(e => {
 });
 
 async function run(args): Promise<void> {
-  const dir1 = args.targets[0];
-  const dir2 = args.targets[1];
+  const target1 = args.targets[0];
+  const target2 = args.targets[1];
   const padding = args.options.padding || 20;
   const clusters = args.options.clusters || 4;
+  const recursive = args.options.recursive || false;
   const output = args.options.output;
-  const filePairs: FilePairs = files_.getFiles(dir1, dir2);
+  const filePairs: FilePairs = recursive
+    ? files_.getFilePairs(target1, target2)
+    : {
+        [`${target1} - ${target2}`]: {
+          left: target1,
+          right: target2
+        }
+      };
   const fileDiffs: FileDiffs = {};
   for (let file in filePairs) {
     const filePair = filePairs[file];

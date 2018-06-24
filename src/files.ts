@@ -3,7 +3,7 @@ import * as png from "./png";
 import * as rectangles from "./rectangles";
 import { FilePairs, FilePair, FileDiff } from "./types";
 
-export function getFiles(dir1: string, dir2: string): FilePairs {
+export function getFilePairs(dir1: string, dir2: string): FilePairs {
   const pngs1 = glob.sync("**/*.png", {
     cwd: dir1
   });
