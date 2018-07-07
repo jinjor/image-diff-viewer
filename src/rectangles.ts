@@ -5,26 +5,41 @@ export async function getRects(
   change: ImageChange,
   clusters: number,
   padding: number
-): Promise<Rect[]> {
-  const overlappingRects = await makeRects(change, clusters, padding);
-  const rects = mergeRects(overlappingRects);
-  return rects;
+): Promise<{
+  left: Rect[];
+  right: Rect[];
+}> {
+  return await makeRects(change, clusters, padding);
 }
 
 async function makeRects(
   change: ImageChange,
   clusters: number,
   padding: number
-): Promise<Rect[]> {
+): Promise<{
+  left: Rect[];
+  right: Rect[];
+}> {
   if (!change.left || !change.right) {
-    return [];
+    return {
+      left: [],
+      right: []
+    };
   }
-  const results = await clusterizer.run(change.points, clusters);
+  const leftResults = await clusterizer.run(change.points.left, clusters);
+  const rightResults = await clusterizer.run(change.points.right, clusters);
   const width = Math.max(change.left.width, change.right.width);
   const height = Math.max(change.left.height, change.right.height);
-  return results.map(vectors => {
+  const leftRects = leftResults.map(vectors => {
     return makeRect(width, height, vectors, padding);
   });
+  const rightRects = rightResults.map(vectors => {
+    return makeRect(width, height, vectors, padding);
+  });
+  return {
+    left: mergeRects(leftRects),
+    right: mergeRects(rightRects)
+  };
 }
 
 function makeRect(

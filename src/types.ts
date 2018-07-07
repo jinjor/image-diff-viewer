@@ -7,13 +7,18 @@ export interface FilePair {
 }
 export type FileDiffType = "removed" | "added" | "updated" | "unchanged";
 export class FileDiff {
-  constructor(public left: Image, public right: Image, public rects: Rect[]) {}
+  constructor(
+    public left: Image,
+    public right: Image,
+    public leftRects: Rect[],
+    public rightRects: Rect[]
+  ) {}
   get type(): FileDiffType {
     if (this.left && !this.right) {
       return "removed";
     } else if (!this.left && this.right) {
       return "added";
-    } else if (this.rects.length) {
+    } else if (this.leftRects.length + this.rightRects.length) {
       return "updated";
     } else {
       return "unchanged";
@@ -39,7 +44,10 @@ export interface Image {
 export interface ImageChange {
   left: Image;
   right: Image;
-  points: Point[];
+  points: {
+    left: Point[];
+    right: Point[];
+  };
 }
 export type Point = number[];
 

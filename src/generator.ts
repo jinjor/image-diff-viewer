@@ -30,8 +30,8 @@ function generateRow(file: string, fileDiff: FileDiff): string {
   let html = "";
   html += `<h2 class="title">${file}</h2>\n`;
   html += `<div class="row ${fileDiff.type}">\n`;
-  html += generateColumn(fileDiff.left, fileDiff.rects);
-  html += generateColumn(fileDiff.right, fileDiff.rects);
+  html += generateColumn(fileDiff.left, fileDiff.leftRects);
+  html += generateColumn(fileDiff.right, fileDiff.rightRects);
   html += `</div>\n`;
   return html;
 }

@@ -1,6 +1,6 @@
 import * as Path from "path";
 import * as glob from "glob";
-import * as png from "./png";
+import * as png from "./png-y-shift";
 import * as rectangles from "./rectangles";
 import { FilePairs, FilePair, FileDiff } from "./types";
 
@@ -44,7 +44,6 @@ export async function compareFile(
   padding: number
 ): Promise<FileDiff> {
   const change = png.compareImage(info.left, info.right);
-  let rects = [];
-  rects = await rectangles.getRects(change, clusters, padding);
-  return new FileDiff(change.left, change.right, rects);
+  const rects = await rectangles.getRects(change, clusters, padding);
+  return new FileDiff(change.left, change.right, rects.left, rects.right);
 }
