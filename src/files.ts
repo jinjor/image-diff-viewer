@@ -45,7 +45,7 @@ export async function compareFile(
   clusters: number,
   padding: number
 ): Promise<FileDiff> {
-  if (isHashEqual(info.left, info.right)) {
+  if (info.left && info.right && isHashEqual(info.left, info.right)) {
     return new FileDiff(null, null, []);
   }
   const change = png.compareImage(info.left, info.right);
