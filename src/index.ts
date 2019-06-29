@@ -31,7 +31,7 @@ export async function run(
     );
     fileDiffs[file] = fileDiff;
   }
-  const html = generator.generate(fileDiffs, options.css);
+  const html = generator.generate(fileDiffs, options.css, options.output);
   if (options.output) {
     fs.writeFileSync(options.output, html);
   } else {
