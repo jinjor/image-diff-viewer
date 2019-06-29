@@ -3,6 +3,8 @@ import * as glob from "glob";
 import * as png from "./png";
 import * as rectangles from "./rectangles";
 import { FilePairs, FilePair, FileDiff } from "./types";
+import * as crypto from "crypto";
+import * as fs from "fs";
 
 export function getFilePairs(file1: string, file2: string): FilePairs {
   const name1 = `${Path.relative(".", file1)}`;
@@ -43,8 +45,22 @@ export async function compareFile(
   clusters: number,
   padding: number
 ): Promise<FileDiff> {
+  if (isHashEqual(info.left, info.right)) {
+    return new FileDiff(null, null, []);
+  }
   const change = png.compareImage(info.left, info.right);
   let rects = [];
   rects = await rectangles.getRects(change, clusters, padding);
   return new FileDiff(change.left, change.right, rects);
+}
+
+function isHashEqual(left: string, right: string): boolean {
+  return md5file(left) === md5file(right);
+}
+
+function md5file(filePath) {
+  const target = fs.readFileSync(filePath);
+  const md5hash = crypto.createHash("md5");
+  md5hash.update(target);
+  return md5hash.digest("hex");
 }

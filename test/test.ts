@@ -78,6 +78,7 @@ describe("index", function() {
   const leftHtml = Path.resolve(tmpDir, "left.html");
   const rightHtml = Path.resolve(tmpDir, "right.html");
   const leftImage = Path.resolve(tmpDir, "left.png");
+  const leftCopyImage = Path.resolve(tmpDir, "leftcopy.png");
   const rightImage = Path.resolve(tmpDir, "right.png");
   before(async function() {
     createHtml(leftHtml, []);
@@ -91,10 +92,16 @@ describe("index", function() {
     await makeImageFromHtml(page, leftHtml, leftImage);
     await makeImageFromHtml(page, rightHtml, rightImage);
     await browser.close();
+    fs.copyFileSync(leftImage, leftCopyImage);
   });
   it("should work", async function() {
     await index.run(leftImage, rightImage, {
-      output: Path.resolve(tmpDir, "result.html")
+      output: Path.resolve(tmpDir, "left-right.html")
+    });
+  });
+  it("should work (no diff)", async function() {
+    await index.run(leftImage, leftCopyImage, {
+      output: Path.resolve(tmpDir, "left-leftcopy.html")
     });
   });
 });
