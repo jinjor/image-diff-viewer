@@ -7,9 +7,16 @@ argv.option({
   type: "boolean",
   description: ""
 });
+// deprecated, will be deleted in 2.0
 argv.option({
   name: "output",
   short: "o",
+  type: "string",
+  description: ""
+});
+// will be "output" in 2.0
+argv.option({
+  name: "outdir",
   type: "string",
   description: ""
 });

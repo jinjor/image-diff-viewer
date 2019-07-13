@@ -1,23 +1,31 @@
 import * as generator from "./generator";
 import * as files_ from "./files";
-import * as fs from "fs";
 import * as Path from "path";
 import { FilePairs, FileDiffs } from "./types";
 
-const defaultOptions = {
-  recursive: false,
-  output: null,
-  padding: 20,
-  clusters: 4,
-  css: Path.resolve(__dirname, `../../assets/style.css`)
-};
+export interface Options {
+  recursive?: boolean;
+  output?: string;
+  outdir?: string;
+  padding?: number;
+  clusters?: number;
+  css?: string;
+}
 
 export async function run(
   left: string,
   right: string,
-  options?: any
+  options?: Options
 ): Promise<void> {
-  options = Object.assign(defaultOptions, options);
+  options = {
+    recursive: false,
+    output: null,
+    outdir: null,
+    padding: 20,
+    clusters: 4,
+    css: Path.resolve(__dirname, `../../assets/style.css`),
+    ...options
+  };
   const filePairs: FilePairs = options.recursive
     ? files_.getFilePairsRecursively(left, right)
     : files_.getFilePairs(left, right);
@@ -31,10 +39,14 @@ export async function run(
     );
     fileDiffs[file] = fileDiff;
   }
-  const html = generator.generate(fileDiffs, options.css, options.output);
-  if (options.output) {
-    fs.writeFileSync(options.output, html);
-  } else {
-    console.log(html);
-  }
+  const leftBaseDir = options.recursive ? left : Path.resolve(".");
+  const rightBaseDir = options.recursive ? right : Path.resolve(".");
+  generator.generate(
+    fileDiffs,
+    options.css,
+    options.output,
+    options.outdir,
+    leftBaseDir,
+    rightBaseDir
+  );
 }
