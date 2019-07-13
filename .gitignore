@@ -7,3 +7,6 @@ yarn-error.log
 dist
 index.html
 tmp
+
+# debug
+work
