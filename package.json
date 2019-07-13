@@ -11,7 +11,8 @@
     "argv": "^0.0.2",
     "glob": "^7.1.2",
     "node-kmeans": "^1.1.8",
-    "pngjs": "^3.3.3"
+    "pngjs": "^3.3.3",
+    "rimraf": "^2.6.3"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.3",

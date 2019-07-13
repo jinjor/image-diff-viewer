@@ -1,25 +1,95 @@
 import { FileDiff, FileDiffs, Image, Rect } from "./types";
 import * as Path from "path";
 import * as fs from "fs";
+import * as rimraf from "rimraf";
 
 const maxImageWidth = 500;
 
 export function generate(
-  files: FileDiffs,
+  fileDiffs: FileDiffs,
   cssFile: string,
-  outPath: string
+  outPath: string,
+  outDir: string,
+  leftBaseDir: string,
+  rightBaseDir: string
+): void {
+  outPath = outPath || (outDir && Path.join(outDir, "index.html"));
+  const html = generateHtml(
+    fileDiffs,
+    cssFile,
+    outPath,
+    outDir,
+    leftBaseDir,
+    rightBaseDir
+  );
+  if (outDir) {
+    copyFiles(fileDiffs, cssFile, leftBaseDir, rightBaseDir, outDir);
+  }
+  if (outPath) {
+    fs.writeFileSync(outPath, html);
+  } else {
+    console.log(html);
+  }
+}
+
+function copyFiles(
+  fileDiffs: FileDiffs,
+  cssFile: string,
+  leftBaseDir: string,
+  rightBaseDir: string,
+  outDir: string
+) {
+  if (fs.existsSync(outDir)) {
+    rimraf.sync(outDir);
+  }
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.copyFileSync(cssFile, Path.join(outDir, "style.css"));
+  for (const key in fileDiffs) {
+    const fileDiff = fileDiffs[key];
+    if (fileDiff.left) {
+      copyFile(fileDiff.left.path, leftBaseDir, Path.join(outDir, "left"));
+    }
+    if (fileDiff.right) {
+      copyFile(fileDiff.right.path, rightBaseDir, Path.join(outDir, "right"));
+    }
+  }
+}
+
+function copyFile(filePath: string, baseDir: string, outDir: string): void {
+  const path = Path.join(outDir, Path.relative(baseDir, filePath));
+  fs.mkdirSync(Path.dirname(path), { recursive: true });
+  fs.copyFileSync(filePath, path);
+}
+
+function generateHtml(
+  fileDiffs: FileDiffs,
+  cssFile: string,
+  outPath: string,
+  outDir: string,
+  leftBaseDir: string,
+  rightBaseDir: string
 ): string {
-  const style = fs.readFileSync(cssFile, "utf8");
+  let styleTag;
+  if (outDir) {
+    styleTag = `<link rel="stylesheet" href="style.css">`;
+  } else {
+    styleTag = `<style>${fs.readFileSync(cssFile, "utf8")}</style>`;
+  }
   let html = `
+${styleTag}
 <h1>Changes</h1>
-<style>
-${style}
-</style>
 `;
   let rows = "";
-  for (let file in files) {
-    const fileDiff = files[file];
-    rows += generateRow(file, fileDiff, outPath);
+  for (let key in fileDiffs) {
+    const fileDiff = fileDiffs[key];
+    rows += generateRow(
+      key,
+      fileDiff,
+      outPath,
+      outDir,
+      leftBaseDir,
+      rightBaseDir
+    );
   }
   if (!rows) {
     html += "<p>No changes.</p>\n";
@@ -31,7 +101,10 @@ ${style}
 function generateRow(
   file: string,
   fileDiff: FileDiff,
-  outPath: string
+  outPath: string,
+  outDirPath: string,
+  leftBaseDir: string,
+  rightBaseDir: string
 ): string {
   if (fileDiff.type === "unchanged") {
     return "";
@@ -40,17 +113,40 @@ function generateRow(
   let html = "";
   html += `<a href="${hash}"><h2 class="title">${file}</h2></a>\n`;
   html += `<div class="row ${fileDiff.type}">\n`;
-  html += generateColumn(fileDiff.left, fileDiff.rects, outPath);
-  html += generateColumn(fileDiff.right, fileDiff.rects, outPath);
+  html += generateColumn(
+    fileDiff.left,
+    fileDiff.rects,
+    outPath,
+    outDirPath,
+    outDirPath ? "left" : null,
+    leftBaseDir
+  );
+  html += generateColumn(
+    fileDiff.right,
+    fileDiff.rects,
+    outPath,
+    outDirPath,
+    outDirPath ? "right" : null,
+    rightBaseDir
+  );
   html += `</div>\n`;
   return html;
 }
 
-function generateColumn(image: Image, rects: Rect[], outPath: string): string {
+function generateColumn(
+  image: Image,
+  rects: Rect[],
+  outPath: string,
+  outDirPath: string,
+  subDir: "left" | "right" | null,
+  baseDir: string
+): string {
   let html = "";
   html += `  <div class="col">\n`;
   if (image) {
-    const src = outPath
+    const src = outDirPath
+      ? subDir + "/" + Path.relative(baseDir, image.path)
+      : outPath
       ? Path.relative(Path.dirname(outPath), image.path)
       : image.path;
     const width = Math.min(image.width, maxImageWidth);
