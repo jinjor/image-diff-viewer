@@ -3,10 +3,19 @@ import * as files_ from "./files";
 import * as Path from "path";
 import { FilePairs, FileDiffs } from "./types";
 
+export interface Options {
+  recursive?: boolean;
+  output?: string;
+  outdir?: string;
+  padding?: number;
+  clusters?: number;
+  css?: string;
+}
+
 export async function run(
   left: string,
   right: string,
-  options?: any
+  options?: Options
 ): Promise<void> {
   options = {
     recursive: false,
