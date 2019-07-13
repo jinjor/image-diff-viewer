@@ -116,39 +116,38 @@ function generateRow(
   html += generateColumn(
     fileDiff.left,
     fileDiff.rects,
-    outPath,
-    outDirPath,
-    outDirPath ? "left" : null,
-    leftBaseDir
+    makeSrc("left", fileDiff, outPath, outDirPath, leftBaseDir, rightBaseDir)
   );
   html += generateColumn(
     fileDiff.right,
     fileDiff.rects,
-    outPath,
-    outDirPath,
-    outDirPath ? "right" : null,
-    rightBaseDir
+    makeSrc("right", fileDiff, outPath, outDirPath, leftBaseDir, rightBaseDir)
   );
   html += `</div>\n`;
   return html;
 }
 
-function generateColumn(
-  image: Image,
-  rects: Rect[],
+function makeSrc(
+  which: "left" | "right",
+  fileDiff: FileDiff,
   outPath: string,
   outDirPath: string,
-  subDir: "left" | "right" | null,
-  baseDir: string
+  leftBaseDir: string,
+  rightBaseDir: string
 ): string {
+  const imagePath = fileDiff[which].path;
+  const baseDir = which === "left" ? leftBaseDir : rightBaseDir;
+  return outDirPath
+    ? which + "/" + Path.relative(baseDir, imagePath)
+    : outPath
+    ? Path.relative(Path.dirname(outPath), imagePath)
+    : imagePath;
+}
+
+function generateColumn(image: Image, rects: Rect[], src: string): string {
   let html = "";
   html += `  <div class="col">\n`;
   if (image) {
-    const src = outDirPath
-      ? subDir + "/" + Path.relative(baseDir, image.path)
-      : outPath
-      ? Path.relative(Path.dirname(outPath), image.path)
-      : image.path;
     const width = Math.min(image.width, maxImageWidth);
     const ratio = width / image.width;
     html += `    <div class="image-container">\n`;
