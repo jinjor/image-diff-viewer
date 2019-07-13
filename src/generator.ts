@@ -36,8 +36,9 @@ function generateRow(
   if (fileDiff.type === "unchanged") {
     return "";
   }
+  const hash = "#" + encodeURI(file);
   let html = "";
-  html += `<h2 class="title">${file}</h2>\n`;
+  html += `<a href="${hash}"><h2 class="title">${file}</h2></a>\n`;
   html += `<div class="row ${fileDiff.type}">\n`;
   html += generateColumn(fileDiff.left, fileDiff.rects, outPath);
   html += generateColumn(fileDiff.right, fileDiff.rects, outPath);
