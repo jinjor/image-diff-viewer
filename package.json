@@ -26,8 +26,7 @@
     "build": "tsc -p .",
     "watch": "tsc -p . -w",
     "pretest": "npm run build",
-    "test": "mocha ./dist/test/*.js",
-    "prepublish": "npm run build && npm test"
+    "test": "mocha ./dist/test/*.js"
   },
   "keywords": [
     "image diff screenshot"
