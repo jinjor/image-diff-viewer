@@ -62,8 +62,6 @@ export const compareImage: CompareImage = (
   const right = rightFile && PNG.sync.read(fs.readFileSync(rightFile));
   let points = [];
   if (left && right) {
-    // trySimpleDiff(leftFile, rightFile, "row");
-    // trySimpleDiff(leftFile, rightFile, "column");
     tryHeuristicDiff(leftFile, rightFile);
   }
   const leftInfo = left && {
@@ -151,55 +149,6 @@ function tryHeuristicDiff(leftFile: string, rightFile: string) {
     fs.writeFileSync(`work/out-heulistic-after.png`, buffer);
   }
 }
-
-// function trySimpleDiff(
-//   leftFile: string,
-//   rightFile: string,
-//   mode: "row" | "column"
-// ) {
-//   const left = leftFile && PNG.sync.read(fs.readFileSync(leftFile));
-//   const right = rightFile && PNG.sync.read(fs.readFileSync(rightFile));
-//   if (left && right) {
-//     const leftStringArray =
-//       mode === "row"
-//         ? stringifyRows(left, 0, left.width - 1)
-//         : stringifyColumns(left);
-//     const rightStringArray =
-//       mode === "row"
-//         ? stringifyRows(right, 0, right.width - 1)
-//         : stringifyColumns(right);
-//     const result = diff(leftStringArray, rightStringArray);
-//     const groups = diffResultToLR(result);
-//     for (const lrs of groups) {
-//       for (const { l, r } of lrs) {
-//         if (l !== null && r !== null) {
-//           mode === "row"
-//             ? modifyRowColor(left, l, "y")
-//             : modifyColumnColor(left, l, "y");
-//           mode === "row"
-//             ? modifyRowColor(right, r, "y")
-//             : modifyColumnColor(right, r, "y");
-//         } else if (l !== null && r === null) {
-//           mode === "row"
-//             ? modifyRowColor(left, l, "r")
-//             : modifyColumnColor(left, l, "r");
-//         } else if (l === null && r !== null) {
-//           mode === "row"
-//             ? modifyRowColor(right, r, "g")
-//             : modifyColumnColor(right, r, "g");
-//         }
-//       }
-//     }
-//     {
-//       const buffer = PNG.sync.write(left, { colorType: 6 });
-//       fs.writeFileSync(`work/out-${mode}-before.png`, buffer);
-//     }
-//     {
-//       const buffer = PNG.sync.write(right, { colorType: 6 });
-//       fs.writeFileSync(`work/out-${mode}-after.png`, buffer);
-//     }
-//   }
-// }
 
 function stringifyRows(png: any, minX: number, maxX: number): string[] {
   const width: number = png.width;

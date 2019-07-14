@@ -49,7 +49,9 @@ export async function compareFile(
   if (info.left && info.right && isHashEqual(info.left, info.right)) {
     return new FileDiff(null, null, []);
   }
+  const start = Date.now();
   const change = png.compareImage(info.left, info.right);
+  console.log("took " + (Date.now() - start) + " ms");
   let rects = [];
   rects = await rectangles.getRects(change, clusters, padding);
   return new FileDiff(change.left, change.right, rects);
