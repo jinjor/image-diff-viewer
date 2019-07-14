@@ -92,6 +92,7 @@ function tryHeuristicDiff(leftFile: string, rightFile: string) {
   const rightStringArray = stringifyColumns(right);
   const result = diff(leftStringArray, rightStringArray);
   const groups = diffResultToLR(result);
+  const points = [];
   for (const lrs of groups) {
     if (lrs[0].l !== null && lrs[0].r !== null) {
       const leftMinX = lrs[0].l;
@@ -106,7 +107,7 @@ function tryHeuristicDiff(leftFile: string, rightFile: string) {
         if (lrs[0].l !== null && lrs[0].r !== null) {
           const width = leftMaxX - leftMinX + 1;
           const height = lrs.length;
-          collectPoints(
+          const pointsInRect = collectPoints(
             left,
             right,
             width,
@@ -116,23 +117,30 @@ function tryHeuristicDiff(leftFile: string, rightFile: string) {
             rightMinX,
             lrs[0].r
           );
+          points.push(...pointsInRect);
         } else {
-        }
-
-        for (const { l, r } of lrs) {
-          if (l !== null && r !== null) {
-            modifyRowColor(left, l, "y", leftMinX, leftMaxX);
-            modifyRowColor(right, r, "y", rightMinX, rightMaxX);
-          } else if (l !== null && r === null) {
-            modifyRowColor(left, l, "r", leftMinX, leftMaxX);
-          } else if (l === null && r !== null) {
-            modifyRowColor(right, r, "g", rightMinX, rightMaxX);
+          for (const { l, r } of lrs) {
+            if (l !== null && r === null) {
+              modifyRowColor(left, l, "r", leftMinX, leftMaxX);
+            } else if (l === null && r !== null) {
+              modifyRowColor(right, r, "g", rightMinX, rightMaxX);
+            }
           }
         }
       }
     } else {
-      // TODO
+      for (const { l, r } of lrs) {
+        if (l !== null && r === null) {
+          modifyColumnColor(left, l, "r");
+        } else if (l === null && r !== null) {
+          modifyColumnColor(right, r, "g");
+        }
+      }
     }
+  }
+  for (const point of points) {
+    modifyColor(left, point.l[0], point.l[1], "fill");
+    modifyColor(right, point.r[0], point.r[1], "fill");
   }
   {
     const buffer = PNG.sync.write(left, { colorType: 6 });
@@ -232,7 +240,7 @@ function stringifyColumns(png: any): string[] {
 function modifyRowColor(
   png: any,
   y: number,
-  color: "r" | "g" | "y",
+  color: "r" | "g" | "fill",
   minX?: number,
   maxX?: number
 ): void {
@@ -242,7 +250,11 @@ function modifyRowColor(
     modifyColor(png, x, y, color);
   }
 }
-function modifyColumnColor(png: any, x: number, color: "r" | "g" | "y"): void {
+function modifyColumnColor(
+  png: any,
+  x: number,
+  color: "r" | "g" | "fill"
+): void {
   for (let y = 0; y < png.height; y++) {
     modifyColor(png, x, y, color);
   }
@@ -251,18 +263,21 @@ function modifyColor(
   png: any,
   x: number,
   y: number,
-  color: "r" | "g" | "y"
+  color: "r" | "g" | "fill"
 ): void {
   let idx = (png.width * y + x) << 2;
-  if (color === "r" || color === "y") {
+  if (color === "r") {
     png.data[idx] = Math.min(255, png.data[idx] * 1.5);
     png.data[idx + 1] = Math.max(0, png.data[idx + 1] * 0.7);
     png.data[idx + 2] = Math.max(0, png.data[idx + 2] * 0.7);
-  }
-  if (color === "g" || color === "y") {
+  } else if (color === "g") {
     png.data[idx] = Math.max(0, png.data[idx] * 0.7);
     png.data[idx + 1] = Math.min(255, png.data[idx + 1] * 1.5);
     png.data[idx + 2] = Math.max(0, png.data[idx + 2] * 0.7);
+  } else if (color === "fill") {
+    png.data[idx] = 255;
+    png.data[idx + 1] = 0;
+    png.data[idx + 2] = 0;
   }
 }
 
@@ -274,22 +289,22 @@ type PointLR = {
 function collectPoints(
   left: any,
   right: any,
-  width: number,
-  height: number,
+  rectWidth: number,
+  rectHeight: number,
   leftMinX: number,
   leftMinY: number,
   rightMinX: number,
   rightMinY: number
 ): PointLR[] {
   const points: PointLR[] = [];
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
+  for (let y = 0; y < rectHeight; y++) {
+    for (let x = 0; x < rectWidth; x++) {
       const leftX = leftMinX + x;
       const leftY = leftMinY + y;
-      const leftIndex = (width * leftY + leftX) << 2;
+      const leftIndex = (left.width * leftY + leftX) << 2;
       const rightX = rightMinX + x;
       const rightY = rightMinY + y;
-      const rightIndex = (width * rightY + rightX) << 2;
+      const rightIndex = (right.width * rightY + rightX) << 2;
       if (
         right.data[rightIndex] === undefined ||
         left.data[leftIndex] === undefined
