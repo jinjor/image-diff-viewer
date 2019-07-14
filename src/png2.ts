@@ -208,7 +208,15 @@ function tryHeuristicDiff(
       });
     }
   }
+  saveImageForDebug(left, right, diffResultGroups);
+  return diffResultGroups;
+}
 
+function saveImageForDebug(
+  left: any,
+  right: any,
+  diffResultGroups: DiffResultGroup[]
+): void {
   for (const diffResult of diffResultGroups) {
     if (diffResult.type === "points") {
       const { points, dx, dy } = diffResult;
@@ -244,7 +252,6 @@ function tryHeuristicDiff(
     const buffer = PNG.sync.write(right, { colorType: 6 });
     fs.writeFileSync(`work/out-heulistic-after.png`, buffer);
   }
-  return diffResultGroups;
 }
 
 function stringifyRows(png: any, minX: number, maxX: number): string[] {
