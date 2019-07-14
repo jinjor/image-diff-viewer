@@ -5,6 +5,53 @@ import * as crypto from "crypto";
 
 const PNG = require("pngjs").PNG;
 
+type LR = {
+  l: number;
+  r: number;
+};
+
+export function diffResultToLR(result: any): LR[] {
+  let l = 0;
+  let r = 0;
+  let removed = [];
+  let added = [];
+  const lrs: LR[] = [];
+  for (const res of result) {
+    if (res.type === "added") {
+      added.push(r);
+      r++;
+    } else if (res.type === "removed") {
+      removed.push(l);
+      l++;
+    } else {
+      addGroupIfNeeded();
+      added.length = 0;
+      removed.length = 0;
+      l++;
+      r++;
+    }
+  }
+  addGroupIfNeeded();
+  return lrs;
+
+  function addGroupIfNeeded() {
+    if (added.length || removed.length) {
+      if (added.length === removed.length) {
+        for (let i = 0; i < added.length; i++) {
+          lrs.push({ l: removed[i], r: added[i] });
+        }
+      } else {
+        for (let i = 0; i < removed.length; i++) {
+          lrs.push({ l: removed[i], r: null });
+        }
+        for (let i = 0; i < added.length; i++) {
+          lrs.push({ l: null, r: added[i] });
+        }
+      }
+    }
+  }
+}
+
 export const compareImage: CompareImage = (
   leftFile?: string,
   rightFile?: string

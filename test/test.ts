@@ -6,6 +6,8 @@ import * as puppeteer from "puppeteer";
 import * as rectangles from "../src/rectangles";
 import * as index from "../src/index";
 import { Rect } from "../src/types";
+import diff from "wu-diff-js";
+import { diffResultToLR } from "../src/png2";
 
 const tmpDir = Path.resolve(__dirname, "../../tmp");
 const imageWidth = 600;
@@ -157,6 +159,32 @@ describe("rectangles", function() {
           20
         );
       }
+    });
+  });
+  describe("#diffResultToLR()", function() {
+    it("should work", async function() {
+      const result = diff(Array.from("strength"), Array.from("string"));
+      /*
+        [
+          { type: 'common', value: 's' },
+          { type: 'common', value: 't' },
+          { type: 'common', value: 'r' },
+          { type: 'removed', value: 'e' },
+          { type: 'added', value: 'i' },
+          { type: 'common', value: 'n' },
+          { type: 'common', value: 'g' },
+          { type: 'removed', value: 't' },
+          { type: 'removed', value: 'h' },
+        ]
+      */
+      const lrs = diffResultToLR(result);
+      assert.equal(lrs.length, 3);
+      assert.equal(lrs[0].l, 3);
+      assert.equal(lrs[0].r, 3);
+      assert.equal(lrs[1].l, 6);
+      assert.equal(lrs[1].r, null);
+      assert.equal(lrs[2].l, 7);
+      assert.equal(lrs[2].r, null);
     });
   });
 });
