@@ -179,12 +179,14 @@ describe("rectangles", function() {
       */
       const groups = diffResultToLR(result);
       assert.equal(groups.length, 2);
-      assert.equal(groups[0][0].l, 3);
-      assert.equal(groups[0][0].r, 3);
-      assert.equal(groups[1][0].l, 6);
-      assert.equal(groups[1][0].r, null);
-      assert.equal(groups[1][1].l, 7);
-      assert.equal(groups[1][1].r, null);
+      assert.equal(groups[0].type, "updated");
+      assert.equal(groups[0].items[0].l, 3);
+      assert.equal(groups[0].items[0].r, 3);
+      assert.equal(groups[1].type, "removed");
+      assert.equal(groups[1].items[0].l, 6);
+      assert.equal(groups[1].items[0].r, null);
+      assert.equal(groups[1].items[1].l, 7);
+      assert.equal(groups[1].items[1].r, null);
     });
   });
 });

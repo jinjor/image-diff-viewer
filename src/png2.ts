@@ -43,9 +43,9 @@ export function diffResultToLR(result: any): LRs[] {
     const lrs: LR[] = [];
     if (added.length || removed.length) {
       let type: LRsType;
-      if (!removed) {
+      if (!removed.length) {
         type = "added";
-      } else if (!added) {
+      } else if (!added.length) {
         type = "removed";
       } else if (added.length === removed.length) {
         type = "updated";
