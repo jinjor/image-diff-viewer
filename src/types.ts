@@ -7,20 +7,23 @@ export interface FilePair {
 }
 export type FileDiffType = "removed" | "added" | "updated" | "unchanged";
 export class FileDiff {
-  constructor(public left: Image, public right: Image, public rects: Rect[]) {}
+  constructor(public left: Image, public right: Image, public rects: RectsLR) {}
   get type(): FileDiffType {
     if (this.left && !this.right) {
       return "removed";
     } else if (!this.left && this.right) {
       return "added";
-    } else if (this.rects.length) {
+    } else if (this.rects.left.length + this.rects.right.length) {
       return "updated";
     } else {
       return "unchanged";
     }
   }
 }
-
+export type RectsLR = {
+  left: Rect[];
+  right: Rect[];
+};
 export class Rect {
   constructor(public left, public top, public right, public bottom) {}
   get width() {
@@ -29,6 +32,14 @@ export class Rect {
   get height() {
     return this.bottom - this.top;
   }
+  shift(dx: number, dy: number): Rect {
+    return new Rect(
+      this.left + dx,
+      this.top + dy,
+      this.right + dx,
+      this.bottom + dy
+    );
+  }
 }
 
 export interface Image {
@@ -36,11 +47,30 @@ export interface Image {
   width: number;
   height: number;
 }
+
+export type Point = number[];
+
+export type Area = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+export type DiffResultGroup =
+  | {
+      type: "points";
+      dx: number;
+      dy: number;
+      points: Point[];
+    }
+  | {
+      type: "area";
+      left: Area;
+      right: Area;
+    };
 export interface ImageChange {
   left: Image;
   right: Image;
-  points: Point[];
+  results: DiffResultGroup[];
 }
-export type Point = number[];
-
 export type CompareImage = (leftFile: string, rightFile: string) => ImageChange;

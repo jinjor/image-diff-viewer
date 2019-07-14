@@ -28,7 +28,14 @@ export const compareImage: CompareImage = (
   return {
     left: leftInfo,
     right: rightInfo,
-    points
+    results: [
+      {
+        type: "points",
+        dx: 0,
+        dy: 0,
+        points
+      }
+    ]
   };
 };
 

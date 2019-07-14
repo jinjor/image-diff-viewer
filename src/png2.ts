@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { Point, CompareImage } from "./types";
+import { Point, CompareImage, DiffResultGroup, Area } from "./types";
 import diff from "wu-diff-js";
 import * as crypto from "crypto";
 
@@ -78,9 +78,9 @@ export const compareImage: CompareImage = (
 ) => {
   const left = leftFile && PNG.sync.read(fs.readFileSync(leftFile));
   const right = rightFile && PNG.sync.read(fs.readFileSync(rightFile));
-  let points = [];
+  let diffResultGroups = [];
   if (left && right) {
-    tryHeuristicDiff(leftFile, rightFile);
+    diffResultGroups = tryHeuristicDiff(leftFile, rightFile);
   }
   const leftInfo = left && {
     path: leftFile,
@@ -95,28 +95,9 @@ export const compareImage: CompareImage = (
   return {
     left: leftInfo,
     right: rightInfo,
-    points
+    results: diffResultGroups
   };
 };
-
-type Area = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
-type DiffResultGroup =
-  | {
-      type: "points";
-      dx: number;
-      dy: number;
-      points: Point[];
-    }
-  | {
-      type: "area";
-      left: Area;
-      right: Area;
-    };
 
 function tryHeuristicDiff(
   leftFile: string,

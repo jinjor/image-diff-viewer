@@ -115,12 +115,12 @@ function generateRow(
   html += `<div class="row ${fileDiff.type}">\n`;
   html += generateColumn(
     fileDiff.left,
-    fileDiff.rects,
+    fileDiff.rects.left,
     makeSrc("left", fileDiff, outPath, outDirPath, leftBaseDir, rightBaseDir)
   );
   html += generateColumn(
     fileDiff.right,
-    fileDiff.rects,
+    fileDiff.rects.right,
     makeSrc("right", fileDiff, outPath, outDirPath, leftBaseDir, rightBaseDir)
   );
   html += `</div>\n`;

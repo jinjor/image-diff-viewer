@@ -5,7 +5,7 @@ import * as Path from "path";
 import * as puppeteer from "puppeteer";
 import * as rectangles from "../src/rectangles";
 import * as index from "../src/index";
-import { Rect } from "../src/types";
+import { Rect, DiffResultGroup } from "../src/types";
 import diff from "wu-diff-js";
 import { diffResultToLR } from "../src/png2";
 
@@ -153,7 +153,7 @@ describe("rectangles", function() {
           {
             left,
             right,
-            points
+            results: [{ type: "points", points }] as DiffResultGroup[]
           },
           4,
           20

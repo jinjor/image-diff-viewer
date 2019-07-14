@@ -1,30 +1,42 @@
 import * as clusterizer from "./clusterizer";
-import { Rect, ImageChange, Point } from "./types";
+import { Rect, ImageChange, Point, RectsLR } from "./types";
 
 export async function getRects(
   change: ImageChange,
-  clusters: number,
+  numberOfClusters: number,
   padding: number
-): Promise<Rect[]> {
-  const overlappingRects = await makeRects(change, clusters, padding);
-  const rects = mergeRects(overlappingRects);
-  return rects;
-}
-
-async function makeRects(
-  change: ImageChange,
-  clusters: number,
-  padding: number
-): Promise<Rect[]> {
+): Promise<RectsLR> {
   if (!change.left || !change.right) {
-    return [];
+    return { left: [], right: [] };
   }
-  const results = await clusterizer.run(change.points, clusters);
   const width = Math.max(change.left.width, change.right.width);
   const height = Math.max(change.left.height, change.right.height);
-  return results.map(vectors => {
-    return makeRect(width, height, vectors, padding);
-  });
+  const left = [];
+  const right = [];
+  for (const result of change.results) {
+    if (result.type === "points") {
+      const clusters = await clusterizer.run(result.points, numberOfClusters);
+      const overlappingRects = clusters.map(vectors => {
+        return makeRect(width, height, vectors, padding);
+      });
+      const leftRects = mergeRects(overlappingRects);
+      const rightRects = leftRects.map(r => {
+        return r.shift(result.dx, result.dy);
+      });
+      left.push(...leftRects);
+      right.push(...rightRects);
+    } else {
+      if (result.left) {
+        const { x, y, width, height } = result.left;
+        left.push(new Rect(x, y, x + width, y + height));
+      }
+      if (result.right) {
+        const { x, y, width, height } = result.right;
+        right.push(new Rect(x, y, x + width, y + height));
+      }
+    }
+  }
+  return { left, right };
 }
 
 function makeRect(
