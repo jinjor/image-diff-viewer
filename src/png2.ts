@@ -9,13 +9,18 @@ type LR = {
   l: number;
   r: number;
 };
+type LRsType = "added" | "removed" | "updated" | "replaced";
+type LRs = {
+  type: LRsType;
+  items: LR[];
+};
 
-export function diffResultToLR(result: any): LR[][] {
+export function diffResultToLR(result: any): LRs[] {
   let l = 0;
   let r = 0;
   let removed = [];
   let added = [];
-  const groups: LR[][] = [];
+  const groups: LRs[] = [];
   for (const res of result) {
     if (res.type === "added") {
       added.push(r);
@@ -37,6 +42,16 @@ export function diffResultToLR(result: any): LR[][] {
   function addGroupIfNeeded() {
     const lrs: LR[] = [];
     if (added.length || removed.length) {
+      let type: LRsType;
+      if (!removed) {
+        type = "added";
+      } else if (!added) {
+        type = "removed";
+      } else if (added.length === removed.length) {
+        type = "updated";
+      } else {
+        type = "replaced";
+      }
       if (added.length === removed.length) {
         for (let i = 0; i < added.length; i++) {
           lrs.push({ l: removed[i], r: added[i] });
@@ -49,7 +64,10 @@ export function diffResultToLR(result: any): LR[][] {
           lrs.push({ l: null, r: added[i] });
         }
       }
-      groups.push(lrs);
+      groups.push({
+        type,
+        items: lrs
+      });
     }
   }
 }
@@ -80,65 +98,143 @@ export const compareImage: CompareImage = (
     points
   };
 };
-function tryHeuristicDiff(leftFile: string, rightFile: string) {
+
+type Area = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+type DiffResultGroup =
+  | {
+      type: "points";
+      dx: number;
+      dy: number;
+      points: Point[];
+    }
+  | {
+      type: "area";
+      left: Area;
+      right: Area;
+    };
+
+function tryHeuristicDiff(
+  leftFile: string,
+  rightFile: string
+): DiffResultGroup[] {
   const left = leftFile && PNG.sync.read(fs.readFileSync(leftFile));
   const right = rightFile && PNG.sync.read(fs.readFileSync(rightFile));
   if (!left || !right) {
-    return;
+    return null;
   }
   const leftStringArray = stringifyColumns(left);
   const rightStringArray = stringifyColumns(right);
   const result = diff(leftStringArray, rightStringArray);
   const groups = diffResultToLR(result);
-  const points = [];
-  for (const lrs of groups) {
-    if (lrs[0].l !== null && lrs[0].r !== null) {
-      const leftMinX = lrs[0].l;
-      const leftMaxX = lrs[lrs.length - 1].l;
-      const rightMinX = lrs[0].r;
-      const rightMaxX = lrs[lrs.length - 1].r;
+  const diffResultGroups: DiffResultGroup[] = [];
+  for (const { type, items } of groups) {
+    if (type === "updated") {
+      const leftMinX = items[0].l;
+      const leftMaxX = items[items.length - 1].l;
+      const rightMinX = items[0].r;
+      const rightMaxX = items[items.length - 1].r;
+      const width = leftMaxX - leftMinX + 1;
       const leftStringArray = stringifyRows(left, leftMinX, leftMaxX);
       const rightStringArray = stringifyRows(right, rightMinX, rightMaxX);
       const result = diff(leftStringArray, rightStringArray);
       const groups = diffResultToLR(result);
-      for (const lrs of groups) {
-        if (lrs[0].l !== null && lrs[0].r !== null) {
-          const width = leftMaxX - leftMinX + 1;
-          const height = lrs.length;
+      for (const { type, items } of groups) {
+        if (type === "updated") {
+          const height = items.length;
+          const rightMinY = items[0].r;
+          const leftMinY = items[0].l;
           const pointsInRect = collectPoints(
             left,
             right,
             width,
             height,
             leftMinX,
-            lrs[0].l,
+            leftMinY,
             rightMinX,
-            lrs[0].r
+            rightMinY
           );
-          points.push(...pointsInRect);
+          diffResultGroups.push({
+            type: "points",
+            dx: rightMinX - leftMinX,
+            dy: rightMinY - leftMinY,
+            points: pointsInRect
+          });
         } else {
-          for (const { l, r } of lrs) {
-            if (l !== null && r === null) {
-              modifyRowColor(left, l, "r", leftMinX, leftMaxX);
-            } else if (l === null && r !== null) {
-              modifyRowColor(right, r, "g", rightMinX, rightMaxX);
-            }
+          let leftArea = null;
+          let rightArea = null;
+          if (items[0].l) {
+            const minY = items[0].l;
+            const maxY = items[items.length - 1].l;
+            const height = maxY - minY + 1;
+            leftArea = { x: leftMinX, y: minY, width, height };
           }
+          if (items[0].r) {
+            const minY = items[0].r;
+            const maxY = items[items.length - 1].r;
+            const height = maxY - minY + 1;
+            rightArea = { x: leftMinX, y: minY, width, height };
+          }
+          diffResultGroups.push({
+            type: "area",
+            left: leftArea,
+            right: rightArea
+          });
         }
       }
     } else {
-      for (const { l, r } of lrs) {
-        if (l !== null && r === null) {
-          modifyColumnColor(left, l, "r");
-        } else if (l === null && r !== null) {
-          modifyColumnColor(right, r, "g");
-        }
+      let leftArea = null;
+      let rightArea = null;
+      if (items[0].l) {
+        const minX = items[0].l;
+        const maxX = items[items.length - 1].l;
+        const width = maxX - minX + 1;
+        leftArea = { x: minX, y: 0, width, height: left.height };
       }
+      if (items[0].r) {
+        const minX = items[0].r;
+        const maxX = items[items.length - 1].r;
+        const width = maxX - minX + 1;
+        rightArea = { x: minX, y: 0, width, height: left.height };
+      }
+      diffResultGroups.push({
+        type: "area",
+        left: leftArea,
+        right: rightArea
+      });
     }
   }
-  for (const point of points) {
-    modifyColor(left, point.l[0], point.l[1], "fill");
-    modifyColor(right, point.r[0], point.r[1], "fill");
+
+  for (const diffResult of diffResultGroups) {
+    if (diffResult.type === "points") {
+      const { points, dx, dy } = diffResult;
+      for (const point of points) {
+        modifyColor(left, point[0], point[1], "fill");
+        modifyColor(right, point[0] + dx, point[1] + dy, "fill");
+      }
+    } else {
+      let leftColor: "r" | "y" = "r";
+      let rightColor: "g" | "y" = "g";
+      if (
+        diffResult.left &&
+        diffResult.right &&
+        diffResult.left.width === diffResult.right.width &&
+        diffResult.left.height === diffResult.right.height
+      ) {
+        leftColor = "y";
+        rightColor = "y";
+      }
+      if (diffResult.left) {
+        modifyAreaColor(left, diffResult.left, leftColor);
+      }
+      if (diffResult.right) {
+        modifyAreaColor(right, diffResult.right, rightColor);
+      }
+    }
   }
   {
     const buffer = PNG.sync.write(left, { colorType: 6 });
@@ -148,6 +244,7 @@ function tryHeuristicDiff(leftFile: string, rightFile: string) {
     const buffer = PNG.sync.write(right, { colorType: 6 });
     fs.writeFileSync(`work/out-heulistic-after.png`, buffer);
   }
+  return diffResultGroups;
 }
 
 function stringifyRows(png: any, minX: number, maxX: number): string[] {
@@ -186,33 +283,23 @@ function stringifyColumns(png: any): string[] {
   }
   return cols;
 }
-function modifyRowColor(
+function modifyAreaColor(
   png: any,
-  y: number,
-  color: "r" | "g" | "fill",
-  minX?: number,
-  maxX?: number
+  area: Area,
+  color: "r" | "g" | "y" | "fill"
 ): void {
-  minX = minX || 0;
-  maxX = maxX || png.width - 1;
-  for (let x = minX; x <= maxX; x++) {
-    modifyColor(png, x, y, color);
-  }
-}
-function modifyColumnColor(
-  png: any,
-  x: number,
-  color: "r" | "g" | "fill"
-): void {
-  for (let y = 0; y < png.height; y++) {
-    modifyColor(png, x, y, color);
+  const { x, y, width, height } = area;
+  for (let i = x; i < x + width; i++) {
+    for (let j = y; j < y + height; j++) {
+      modifyColor(png, i, j, color);
+    }
   }
 }
 function modifyColor(
   png: any,
   x: number,
   y: number,
-  color: "r" | "g" | "fill"
+  color: "r" | "g" | "y" | "fill"
 ): void {
   let idx = (png.width * y + x) << 2;
   if (color === "r") {
@@ -223,17 +310,16 @@ function modifyColor(
     png.data[idx] = Math.max(0, png.data[idx] * 0.7);
     png.data[idx + 1] = Math.min(255, png.data[idx + 1] * 1.5);
     png.data[idx + 2] = Math.max(0, png.data[idx + 2] * 0.7);
+  } else if (color === "y") {
+    png.data[idx] = Math.min(255, png.data[idx] * 1.5);
+    png.data[idx + 1] = Math.min(255, png.data[idx + 1] * 1.5);
+    png.data[idx + 2] = Math.max(0, png.data[idx + 2] * 0.7);
   } else if (color === "fill") {
     png.data[idx] = 255;
     png.data[idx + 1] = 0;
     png.data[idx + 2] = 0;
   }
 }
-
-type PointLR = {
-  l: Point;
-  r: Point;
-};
 
 function collectPoints(
   left: any,
@@ -244,8 +330,8 @@ function collectPoints(
   leftMinY: number,
   rightMinX: number,
   rightMinY: number
-): PointLR[] {
-  const points: PointLR[] = [];
+): Point[] {
+  const points: Point[] = [];
   for (let y = 0; y < rectHeight; y++) {
     for (let x = 0; x < rectWidth; x++) {
       const leftX = leftMinX + x;
@@ -258,20 +344,14 @@ function collectPoints(
         right.data[rightIndex] === undefined ||
         left.data[leftIndex] === undefined
       ) {
-        points.push({
-          l: [leftX, leftY],
-          r: [rightX, rightY]
-        });
+        points.push([leftX, leftY]);
         continue;
       }
       const dr = right.data[rightIndex] - left.data[leftIndex];
       const dg = right.data[rightIndex + 1] - left.data[leftIndex + 1];
       const db = right.data[rightIndex + 2] - left.data[leftIndex + 2];
       if (dr || dg || db) {
-        points.push({
-          l: [leftX, leftY],
-          r: [rightX, rightY]
-        });
+        points.push([leftX, leftY]);
       }
     }
   }
