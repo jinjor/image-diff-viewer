@@ -105,12 +105,12 @@ function tryHeuristicDiff(leftFile: string, rightFile: string) {
       for (const lrs of groups) {
         for (const { l, r } of lrs) {
           if (l !== null && r !== null) {
-            modifyRowColor(left, l, "y");
-            modifyRowColor(right, r, "y");
+            modifyRowColor(left, l, "y", leftMinX, leftMaxX);
+            modifyRowColor(right, r, "y", rightMinX, rightMaxX);
           } else if (l !== null && r === null) {
-            modifyRowColor(left, l, "r");
+            modifyRowColor(left, l, "r", leftMinX, leftMaxX);
           } else if (l === null && r !== null) {
-            modifyRowColor(right, r, "g");
+            modifyRowColor(right, r, "g", rightMinX, rightMaxX);
           }
         }
       }
@@ -213,8 +213,16 @@ function stringifyColumns(png: any): string[] {
   }
   return cols;
 }
-function modifyRowColor(png: any, y: number, color: "r" | "g" | "y"): void {
-  for (let x = 0; x < png.width; x++) {
+function modifyRowColor(
+  png: any,
+  y: number,
+  color: "r" | "g" | "y",
+  minX?: number,
+  maxX?: number
+): void {
+  minX = minX || 0;
+  maxX = maxX || png.width - 1;
+  for (let x = minX; x <= maxX; x++) {
     modifyColor(png, x, y, color);
   }
 }
