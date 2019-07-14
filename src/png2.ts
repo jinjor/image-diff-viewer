@@ -10,12 +10,12 @@ type LR = {
   r: number;
 };
 
-export function diffResultToLR(result: any): LR[] {
+export function diffResultToLR(result: any): LR[][] {
   let l = 0;
   let r = 0;
   let removed = [];
   let added = [];
-  const lrs: LR[] = [];
+  const groups: LR[][] = [];
   for (const res of result) {
     if (res.type === "added") {
       added.push(r);
@@ -32,9 +32,10 @@ export function diffResultToLR(result: any): LR[] {
     }
   }
   addGroupIfNeeded();
-  return lrs;
+  return groups;
 
   function addGroupIfNeeded() {
+    const lrs: LR[] = [];
     if (added.length || removed.length) {
       if (added.length === removed.length) {
         for (let i = 0; i < added.length; i++) {
@@ -48,6 +49,7 @@ export function diffResultToLR(result: any): LR[] {
           lrs.push({ l: null, r: added[i] });
         }
       }
+      groups.push(lrs);
     }
   }
 }
