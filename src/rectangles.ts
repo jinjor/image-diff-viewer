@@ -13,18 +13,17 @@ export async function getRects(
   const height = Math.max(change.left.height, change.right.height);
   const left = [];
   const right = [];
+  const allPoints = {};
+
   for (const result of change.results) {
     if (result.type === "points") {
-      const clusters = await clusterizer.run(result.points, numberOfClusters);
-      const overlappingRects = clusters.map(vectors => {
-        return makeRect(width, height, vectors, padding);
-      });
-      const leftRects = mergeRects(overlappingRects);
-      const rightRects = leftRects.map(r => {
-        return r.shift(result.dx, result.dy);
-      });
-      left.push(...leftRects);
-      right.push(...rightRects);
+      const key = result.dx + "_" + result.dy;
+      allPoints[key] = allPoints[key] || {
+        dx: result.dx,
+        dy: result.dy,
+        points: []
+      };
+      allPoints[key].points.push(...result.points);
     } else {
       if (result.left) {
         const { x, y, width, height } = result.left;
@@ -35,6 +34,19 @@ export async function getRects(
         right.push(new Rect(x, y, x + width, y + height));
       }
     }
+  }
+  for (const key in allPoints) {
+    const result = allPoints[key];
+    const clusters = await clusterizer.run(result.points, numberOfClusters);
+    const overlappingRects = clusters.map(vectors => {
+      return makeRect(width, height, vectors, padding);
+    });
+    const leftRects = mergeRects(overlappingRects);
+    const rightRects = leftRects.map(r => {
+      return r.shift(result.dx, result.dy);
+    });
+    left.push(...leftRects);
+    right.push(...rightRects);
   }
   return { left, right };
 }
