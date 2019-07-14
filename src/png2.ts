@@ -62,8 +62,9 @@ export const compareImage: CompareImage = (
   const right = rightFile && PNG.sync.read(fs.readFileSync(rightFile));
   let points = [];
   if (left && right) {
-    trySimpleDiff(leftFile, rightFile, "row");
-    trySimpleDiff(leftFile, rightFile, "column");
+    // trySimpleDiff(leftFile, rightFile, "row");
+    // trySimpleDiff(leftFile, rightFile, "column");
+    tryHeuristicDiff(leftFile, rightFile);
   }
   const leftInfo = left && {
     path: leftFile,
@@ -81,6 +82,51 @@ export const compareImage: CompareImage = (
     points
   };
 };
+function tryHeuristicDiff(leftFile: string, rightFile: string) {
+  const left = leftFile && PNG.sync.read(fs.readFileSync(leftFile));
+  const right = rightFile && PNG.sync.read(fs.readFileSync(rightFile));
+  if (!left || !right) {
+    return;
+  }
+  const leftStringArray = stringifyColumns(left);
+  const rightStringArray = stringifyColumns(right);
+  const result = diff(leftStringArray, rightStringArray);
+  const groups = diffResultToLR(result);
+  for (const lrs of groups) {
+    if (lrs[0].l !== null && lrs[0].r !== null) {
+      const leftMinX = lrs[0].l;
+      const leftMaxX = lrs[lrs.length - 1].l;
+      const rightMinX = lrs[0].r;
+      const rightMaxX = lrs[lrs.length - 1].r;
+      const leftStringArray = stringifyRows(left, leftMinX, leftMaxX);
+      const rightStringArray = stringifyRows(right, rightMinX, rightMaxX);
+      const result = diff(leftStringArray, rightStringArray);
+      const groups = diffResultToLR(result);
+      for (const lrs of groups) {
+        for (const { l, r } of lrs) {
+          if (l !== null && r !== null) {
+            modifyRowColor(left, l, "y");
+            modifyRowColor(right, r, "y");
+          } else if (l !== null && r === null) {
+            modifyRowColor(left, l, "r");
+          } else if (l === null && r !== null) {
+            modifyRowColor(right, r, "g");
+          }
+        }
+      }
+    } else {
+      // TODO
+    }
+  }
+  {
+    const buffer = PNG.sync.write(left, { colorType: 6 });
+    fs.writeFileSync(`work/out-heulistic-before.png`, buffer);
+  }
+  {
+    const buffer = PNG.sync.write(right, { colorType: 6 });
+    fs.writeFileSync(`work/out-heulistic-after.png`, buffer);
+  }
+}
 
 function trySimpleDiff(
   leftFile: string,
@@ -99,23 +145,25 @@ function trySimpleDiff(
         ? stringifyRows(right, 0, right.width - 1)
         : stringifyColumns(right);
     const result = diff(leftStringArray, rightStringArray);
-    const lrs = diffResultToLR(result);
-    for (const { l, r } of lrs) {
-      if (l !== null && r !== null) {
-        mode === "row"
-          ? modifyRowColor(left, l, "y")
-          : modifyColumnColor(left, l, "y");
-        mode === "row"
-          ? modifyRowColor(right, r, "y")
-          : modifyColumnColor(right, r, "y");
-      } else if (l !== null && r === null) {
-        mode === "row"
-          ? modifyRowColor(left, l, "r")
-          : modifyColumnColor(left, l, "r");
-      } else if (l === null && r !== null) {
-        mode === "row"
-          ? modifyRowColor(right, r, "g")
-          : modifyColumnColor(right, r, "g");
+    const groups = diffResultToLR(result);
+    for (const lrs of groups) {
+      for (const { l, r } of lrs) {
+        if (l !== null && r !== null) {
+          mode === "row"
+            ? modifyRowColor(left, l, "y")
+            : modifyColumnColor(left, l, "y");
+          mode === "row"
+            ? modifyRowColor(right, r, "y")
+            : modifyColumnColor(right, r, "y");
+        } else if (l !== null && r === null) {
+          mode === "row"
+            ? modifyRowColor(left, l, "r")
+            : modifyColumnColor(left, l, "r");
+        } else if (l === null && r !== null) {
+          mode === "row"
+            ? modifyRowColor(right, r, "g")
+            : modifyColumnColor(right, r, "g");
+        }
       }
     }
     {
