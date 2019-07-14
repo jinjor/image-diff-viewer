@@ -103,6 +103,22 @@ function tryHeuristicDiff(leftFile: string, rightFile: string) {
       const result = diff(leftStringArray, rightStringArray);
       const groups = diffResultToLR(result);
       for (const lrs of groups) {
+        if (lrs[0].l !== null && lrs[0].r !== null) {
+          const width = leftMaxX - leftMinX + 1;
+          const height = lrs.length;
+          collectPoints(
+            left,
+            right,
+            width,
+            height,
+            leftMinX,
+            lrs[0].l,
+            rightMinX,
+            lrs[0].r
+          );
+        } else {
+        }
+
         for (const { l, r } of lrs) {
           if (l !== null && r !== null) {
             modifyRowColor(left, l, "y", leftMinX, leftMaxX);
@@ -248,4 +264,52 @@ function modifyColor(
     png.data[idx + 1] = Math.min(255, png.data[idx + 1] * 1.5);
     png.data[idx + 2] = Math.max(0, png.data[idx + 2] * 0.7);
   }
+}
+
+type PointLR = {
+  l: Point;
+  r: Point;
+};
+
+function collectPoints(
+  left: any,
+  right: any,
+  width: number,
+  height: number,
+  leftMinX: number,
+  leftMinY: number,
+  rightMinX: number,
+  rightMinY: number
+): PointLR[] {
+  const points: PointLR[] = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const leftX = leftMinX + x;
+      const leftY = leftMinY + y;
+      const leftIndex = (width * leftY + leftX) << 2;
+      const rightX = rightMinX + x;
+      const rightY = rightMinY + y;
+      const rightIndex = (width * rightY + rightX) << 2;
+      if (
+        right.data[rightIndex] === undefined ||
+        left.data[leftIndex] === undefined
+      ) {
+        points.push({
+          l: [leftX, leftY],
+          r: [rightX, rightY]
+        });
+        continue;
+      }
+      const dr = right.data[rightIndex] - left.data[leftIndex];
+      const dg = right.data[rightIndex + 1] - left.data[leftIndex + 1];
+      const db = right.data[rightIndex + 2] - left.data[leftIndex + 2];
+      if (dr || dg || db) {
+        points.push({
+          l: [leftX, leftY],
+          r: [rightX, rightY]
+        });
+      }
+    }
+  }
+  return points;
 }
