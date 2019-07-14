@@ -93,32 +93,23 @@ function trySimpleDiff(
     const rightStringArray =
       mode === "row" ? stringifyRows(right) : stringifyColumns(right);
     const result = diff(leftStringArray, rightStringArray);
-    let leftIndex = 0;
-    let rightIndex = 0;
-    let inGroup = false;
-    for (const r of result) {
-      if (r.type === "added") {
+    const lrs = diffResultToLR(result);
+    for (const { l, r } of lrs) {
+      if (l !== null && r !== null) {
         mode === "row"
-          ? modifyRowColor(right, rightIndex, "g")
-          : modifyColumnColor(right, rightIndex, "g");
-        inGroup = true;
-        rightIndex++;
-        // console.log(leftIndex, rightIndex, r);
-      } else if (r.type === "removed") {
+          ? modifyRowColor(left, l, "y")
+          : modifyColumnColor(left, l, "y");
         mode === "row"
-          ? modifyRowColor(left, leftIndex, "r")
-          : modifyColumnColor(left, leftIndex, "r");
-        inGroup = true;
-        leftIndex++;
-        // console.log(leftIndex, rightIndex, r);
-      } else {
-        rightIndex++;
-        leftIndex++;
-        if (inGroup) {
-          // console.log();
-        }
-        inGroup = false;
-        // console.log(leftIndex, rightIndex, r);
+          ? modifyRowColor(right, r, "y")
+          : modifyColumnColor(right, r, "y");
+      } else if (l !== null && r === null) {
+        mode === "row"
+          ? modifyRowColor(left, l, "r")
+          : modifyColumnColor(left, l, "r");
+      } else if (l === null && r !== null) {
+        mode === "row"
+          ? modifyRowColor(right, r, "g")
+          : modifyColumnColor(right, r, "g");
       }
     }
     {
@@ -168,23 +159,29 @@ function stringifyColumns(png: any): string[] {
   }
   return cols;
 }
-function modifyRowColor(png: any, y: number, color: "r" | "g"): void {
+function modifyRowColor(png: any, y: number, color: "r" | "g" | "y"): void {
   for (let x = 0; x < png.width; x++) {
     modifyColor(png, x, y, color);
   }
 }
-function modifyColumnColor(png: any, x: number, color: "r" | "g"): void {
+function modifyColumnColor(png: any, x: number, color: "r" | "g" | "y"): void {
   for (let y = 0; y < png.height; y++) {
     modifyColor(png, x, y, color);
   }
 }
-function modifyColor(png: any, x: number, y: number, color: "r" | "g"): void {
+function modifyColor(
+  png: any,
+  x: number,
+  y: number,
+  color: "r" | "g" | "y"
+): void {
   let idx = (png.width * y + x) << 2;
-  if (color === "r") {
+  if (color === "r" || color === "y") {
     png.data[idx] = Math.min(255, png.data[idx] * 1.5);
     png.data[idx + 1] = Math.max(0, png.data[idx + 1] * 0.7);
     png.data[idx + 2] = Math.max(0, png.data[idx + 2] * 0.7);
-  } else if (color === "g") {
+  }
+  if (color === "g" || color === "y") {
     png.data[idx] = Math.max(0, png.data[idx] * 0.7);
     png.data[idx + 1] = Math.min(255, png.data[idx + 1] * 1.5);
     png.data[idx + 2] = Math.max(0, png.data[idx + 2] * 0.7);
