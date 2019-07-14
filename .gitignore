@@ -5,6 +5,9 @@ yarn-error.log
 # generated
 .cache
 dist
-index.html
-tmp
+
+# debug / test
 work
+tmp
+index.html
+out

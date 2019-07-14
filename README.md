@@ -22,6 +22,10 @@ $ image-diff-viewer left.png right.png -o index.html
 $ image-diff-viewer -r dir1 dir2 -o index.html
 ```
 
+```bash
+$ image-diff-viewer -r dir1 dir2 --outdir=out
+```
+
 ### Install locally and use
 
 ```bash
