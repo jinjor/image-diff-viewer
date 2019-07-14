@@ -89,9 +89,13 @@ function trySimpleDiff(
   const right = rightFile && PNG.sync.read(fs.readFileSync(rightFile));
   if (left && right) {
     const leftStringArray =
-      mode === "row" ? stringifyRows(left) : stringifyColumns(left);
+      mode === "row"
+        ? stringifyRows(left, 0, left.width - 1)
+        : stringifyColumns(left);
     const rightStringArray =
-      mode === "row" ? stringifyRows(right) : stringifyColumns(right);
+      mode === "row"
+        ? stringifyRows(right, 0, right.width - 1)
+        : stringifyColumns(right);
     const result = diff(leftStringArray, rightStringArray);
     const lrs = diffResultToLR(result);
     for (const { l, r } of lrs) {
@@ -123,13 +127,13 @@ function trySimpleDiff(
   }
 }
 
-function stringifyRows(png: any): string[] {
+function stringifyRows(png: any, minX: number, maxX: number): string[] {
   const width: number = png.width;
   const height: number = png.height;
   const rows = [];
   for (let y = 0; y < height; y++) {
     let row = "";
-    for (let x = 0; x < width; x++) {
+    for (let x = minX; x <= maxX; x++) {
       const idx = (width * y + x) << 2;
       row += png.data[idx];
       row += png.data[idx + 1];
