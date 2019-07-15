@@ -7,7 +7,7 @@ import * as rectangles from "../src/rectangles";
 import * as index from "../src/index";
 import { Rect, DiffResultGroup } from "../src/types";
 import diff from "wu-diff-js";
-import { diffResultToLR } from "../src/png2";
+import { groupDiffResult } from "../src/png2";
 
 const tmpDir = Path.resolve(__dirname, "../../tmp");
 const imageWidth = 600;
@@ -177,16 +177,17 @@ describe("rectangles", function() {
           { type: 'removed', value: 'h' },
         ]
       */
-      const groups = diffResultToLR(result);
+      const groups = groupDiffResult(result);
       assert.equal(groups.length, 2);
       assert.equal(groups[0].type, "updated");
-      assert.equal(groups[0].items[0].l, 3);
-      assert.equal(groups[0].items[0].r, 3);
+      assert.equal(groups[0].left.min, 3);
+      assert.equal(groups[0].left.length, 1);
+      assert.equal(groups[0].right.min, 3);
+      assert.equal(groups[0].right.length, 1);
       assert.equal(groups[1].type, "removed");
-      assert.equal(groups[1].items[0].l, 6);
-      assert.equal(groups[1].items[0].r, null);
-      assert.equal(groups[1].items[1].l, 7);
-      assert.equal(groups[1].items[1].r, null);
+      assert.equal(groups[1].left.min, 6);
+      assert.equal(groups[1].left.length, 2);
+      assert.equal(groups[1].right, null);
     });
   });
 });

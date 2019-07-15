@@ -9,29 +9,43 @@ type LR = {
   l: number;
   r: number;
 };
-type LRsType = "added" | "removed" | "updated" | "replaced";
-type LRs = {
-  type: LRsType;
-  items: LR[];
-};
+type UpdateType = "added" | "removed" | "updated" | "replaced";
+class UpdateGroup {
+  constructor(
+    public left: { min: number; length: number },
+    public right: { min: number; length: number }
+  ) {}
+  get type(): UpdateType {
+    if (!this.left) {
+      return "added";
+    }
+    if (!this.right) {
+      return "removed";
+    }
+    if (this.left.length === this.right.length) {
+      return "updated";
+    }
+    return "replaced";
+  }
+}
 
-export function diffResultToLR(result: any): LRs[] {
+export function groupDiffResult(result: any): UpdateGroup[] {
   let l = 0;
   let r = 0;
-  let removed = [];
-  let added = [];
-  const groups: LRs[] = [];
+  let removed = 0;
+  let added = 0;
+  const groups: UpdateGroup[] = [];
   for (const res of result) {
     if (res.type === "added") {
-      added.push(r);
+      added++;
       r++;
     } else if (res.type === "removed") {
-      removed.push(l);
+      removed++;
       l++;
     } else {
       addGroupIfNeeded();
-      added.length = 0;
-      removed.length = 0;
+      added = 0;
+      removed = 0;
       l++;
       r++;
     }
@@ -40,34 +54,16 @@ export function diffResultToLR(result: any): LRs[] {
   return groups;
 
   function addGroupIfNeeded() {
-    const lrs: LR[] = [];
-    if (added.length || removed.length) {
-      let type: LRsType;
-      if (!removed.length) {
-        type = "added";
-      } else if (!added.length) {
-        type = "removed";
-      } else if (added.length === removed.length) {
-        type = "updated";
-      } else {
-        type = "replaced";
-      }
-      if (added.length === removed.length) {
-        for (let i = 0; i < added.length; i++) {
-          lrs.push({ l: removed[i], r: added[i] });
-        }
-      } else {
-        for (let i = 0; i < removed.length; i++) {
-          lrs.push({ l: removed[i], r: null });
-        }
-        for (let i = 0; i < added.length; i++) {
-          lrs.push({ l: null, r: added[i] });
-        }
-      }
-      groups.push({
-        type,
-        items: lrs
-      });
+    let left;
+    let right;
+    if (removed) {
+      left = { min: l - removed, length: removed };
+    }
+    if (added) {
+      right = { min: r - added, length: added };
+    }
+    if (left || right) {
+      groups.push(new UpdateGroup(left, right));
     }
   }
 }
@@ -111,24 +107,25 @@ function tryHeuristicDiff(
   const leftStringArray = stringifyColumns(left);
   const rightStringArray = stringifyColumns(right);
   const result = diff(leftStringArray, rightStringArray);
-  const groups = diffResultToLR(result);
+  console.log(left.width, right.width);
+  const groups = groupDiffResult(result);
   const diffResultGroups: DiffResultGroup[] = [];
-  for (const { type, items } of groups) {
-    if (type === "updated") {
-      const leftMinX = items[0].l;
-      const leftMaxX = items[items.length - 1].l;
-      const rightMinX = items[0].r;
-      const rightMaxX = items[items.length - 1].r;
-      const width = leftMaxX - leftMinX + 1;
-      const leftStringArray = stringifyRows(left, leftMinX, leftMaxX);
-      const rightStringArray = stringifyRows(right, rightMinX, rightMaxX);
+  for (const group of groups) {
+    // console.log("col", type, items.length);
+    if (group.type === "updated") {
+      const leftMinX = group.left.min;
+      const rightMinX = group.right.min;
+      const width = group.left.length;
+      const leftStringArray = stringifyRows(left, leftMinX, width);
+      const rightStringArray = stringifyRows(right, rightMinX, width);
       const result = diff(leftStringArray, rightStringArray);
-      const groups = diffResultToLR(result);
-      for (const { type, items } of groups) {
-        if (type === "updated") {
-          const height = items.length;
-          const rightMinY = items[0].r;
-          const leftMinY = items[0].l;
+      const groups = groupDiffResult(result);
+      for (const group of groups) {
+        // console.log("  row", type, items.length);
+        if (group.type === "updated") {
+          const height = group.left.length;
+          const leftMinY = group.left.min;
+          const rightMinY = group.right.min;
           const pointsInRect = collectPoints(
             left,
             right,
@@ -137,7 +134,8 @@ function tryHeuristicDiff(
             leftMinX,
             leftMinY,
             rightMinX,
-            rightMinY
+            rightMinY,
+            0
           );
           diffResultGroups.push({
             type: "points",
@@ -148,17 +146,15 @@ function tryHeuristicDiff(
         } else {
           let leftArea = null;
           let rightArea = null;
-          if (items[0].l) {
-            const minY = items[0].l;
-            const maxY = items[items.length - 1].l;
-            const height = maxY - minY + 1;
+          if (group.left) {
+            const minY = group.left.min;
+            const height = group.left.length;
             leftArea = { x: leftMinX, y: minY, width, height };
           }
-          if (items[0].r) {
-            const minY = items[0].r;
-            const maxY = items[items.length - 1].r;
-            const height = maxY - minY + 1;
-            rightArea = { x: leftMinX, y: minY, width, height };
+          if (group.right) {
+            const minY = group.right.min;
+            const height = group.right.length;
+            rightArea = { x: rightMinX, y: minY, width, height };
           }
           diffResultGroups.push({
             type: "area",
@@ -170,17 +166,15 @@ function tryHeuristicDiff(
     } else {
       let leftArea = null;
       let rightArea = null;
-      if (items[0].l) {
-        const minX = items[0].l;
-        const maxX = items[items.length - 1].l;
-        const width = maxX - minX + 1;
+      if (group.left) {
+        const minX = group.left.min;
+        const width = group.left.length;
         leftArea = { x: minX, y: 0, width, height: left.height };
       }
-      if (items[0].r) {
-        const minX = items[0].r;
-        const maxX = items[items.length - 1].r;
-        const width = maxX - minX + 1;
-        rightArea = { x: minX, y: 0, width, height: left.height };
+      if (group.right) {
+        const minX = group.right.min;
+        const width = group.right.length;
+        rightArea = { x: minX, y: 0, width, height: right.height };
       }
       diffResultGroups.push({
         type: "area",
@@ -235,13 +229,13 @@ function saveImageForDebug(
   }
 }
 
-function stringifyRows(png: any, minX: number, maxX: number): string[] {
+function stringifyRows(png: any, minX: number, areaWidth: number): string[] {
   const width: number = png.width;
   const height: number = png.height;
   const rows = [];
   for (let y = 0; y < height; y++) {
     let row = "";
-    for (let x = minX; x <= maxX; x++) {
+    for (let x = minX; x < minX + areaWidth; x++) {
       const idx = (width * y + x) << 2;
       row += png.data[idx];
       row += png.data[idx + 1];
@@ -317,7 +311,8 @@ function collectPoints(
   leftMinX: number,
   leftMinY: number,
   rightMinX: number,
-  rightMinY: number
+  rightMinY: number,
+  threshold: number
 ): Point[] {
   const points: Point[] = [];
   for (let y = 0; y < rectHeight; y++) {
@@ -338,7 +333,11 @@ function collectPoints(
       const dr = right.data[rightIndex] - left.data[leftIndex];
       const dg = right.data[rightIndex + 1] - left.data[leftIndex + 1];
       const db = right.data[rightIndex + 2] - left.data[leftIndex + 2];
-      if (dr || dg || db) {
+      if (
+        Math.abs(dr) > threshold ||
+        Math.abs(dg) > threshold ||
+        Math.abs(db) > threshold
+      ) {
         points.push([leftX, leftY]);
       }
     }
