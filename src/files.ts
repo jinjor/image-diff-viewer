@@ -46,13 +46,17 @@ export async function compareFile(
   clusters: number,
   padding: number
 ): Promise<FileDiff> {
+  console.log("comparing " + info.left + "and " + info.right);
   if (info.left && info.right && isHashEqual(info.left, info.right)) {
+    console.log("hash matched");
     return new FileDiff(null, null, { left: [], right: [] });
   }
-  const start = Date.now();
+  let start = Date.now();
   const change = png.compareImage(info.left, info.right);
-  console.log("took " + (Date.now() - start) + " ms");
+  console.log("took " + (Date.now() - start) + " ms to compare");
+  start = Date.now();
   const rectsLR = await rectangles.getRects(change, clusters, padding);
+  console.log("took " + (Date.now() - start) + " ms to get rects");
   return new FileDiff(change.left, change.right, rectsLR);
 }
 

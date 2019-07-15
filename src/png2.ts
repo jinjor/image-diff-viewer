@@ -5,10 +5,6 @@ import * as crypto from "crypto";
 
 const PNG = require("pngjs").PNG;
 
-type LR = {
-  l: number;
-  r: number;
-};
 type UpdateType = "added" | "removed" | "updated" | "replaced";
 class UpdateGroup {
   constructor(
@@ -112,6 +108,29 @@ function tryHeuristicDiff(
   const diffResultGroups: DiffResultGroup[] = [];
   for (const group of groups) {
     console.log("col", group.type, group.left, group.right);
+    // if (group.left && group.left.length === 543) {
+    //   for (let i = 0; i < left.height; i++) {
+    //     console.log(
+    //       leftStringArray[group.left.min + i],
+    //       rightStringArray[group.right.min + i]
+    //     );
+    //   }
+    // }
+    // if (group.left && group.left.length === 1) {
+    //   for (let i = 0; i < left.height; i++) {
+    //     const leftColor = getPixelForDebug(left, group.left.min, i);
+    //     const rightColor = getPixelForDebug(right, group.right.min, i);
+    //     const rightColor2 = getPixelForDebug(right, group.right.min + 1, i);
+    //     const different = leftColor !== rightColor;
+    //     console.log(
+    //       i,
+    //       leftColor,
+    //       rightColor,
+    //       rightColor2,
+    //       different ? "*" : ""
+    //     );
+    //   }
+    // }
     if (group.type === "updated") {
       const leftMinX = group.left.min;
       const rightMinX = group.right.min;
@@ -135,7 +154,7 @@ function tryHeuristicDiff(
             leftMinY,
             rightMinX,
             rightMinY,
-            5
+            3
           );
           diffResultGroups.push({
             type: "points",
@@ -247,6 +266,11 @@ function stringifyRows(png: any, minX: number, areaWidth: number): string[] {
   }
   return rows;
 }
+function getPixelForDebug(png: any, x: number, y: number): string {
+  const idx = (png.width * y + x) << 2;
+  return png.data[idx] + "," + png.data[idx + 1] + "," + png.data[idx + 2];
+}
+
 function stringifyColumns(png: any): string[] {
   const width: number = png.width;
   const height: number = png.height;
