@@ -1,7 +1,6 @@
 import * as Path from "path";
 import * as glob from "glob";
-// import * as png from "./png";
-import * as png from "./png2";
+import * as png from "./png-diff";
 import * as rectangles from "./rectangles";
 import { FilePairs, FilePair, FileDiff } from "./types";
 import * as crypto from "crypto";

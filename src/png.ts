@@ -1,65 +1,46 @@
 import * as fs from "fs";
-import { Point, CompareImage } from "./types";
+import { Image } from "./types";
 
 const PNG = require("pngjs").PNG;
 
-export const compareImage: CompareImage = (
-  leftFile?: string,
-  rightFile?: string
-) => {
-  const left = leftFile && PNG.sync.read(fs.readFileSync(leftFile));
-  const right = rightFile && PNG.sync.read(fs.readFileSync(rightFile));
-  const leftInfo = left && {
-    path: leftFile,
-    width: left.width,
-    height: left.height
-  };
-  const rightInfo = right && {
-    path: rightFile,
-    width: right.width,
-    height: right.height
-  };
-  let points = [];
-  if (left && right) {
-    const width = Math.max(left.width, right.width);
-    const height = Math.max(left.height, right.height);
-    points = collectPoints(left, right, width, height);
+export class Png implements Image {
+  private png: any;
+  constructor(public path: string) {
+    this.png = PNG.sync.read(fs.readFileSync(this.path));
   }
-  return {
-    left: leftInfo,
-    right: rightInfo,
-    results: [
-      {
-        type: "points",
-        dx: 0,
-        dy: 0,
-        points
-      }
-    ]
-  };
-};
-
-function collectPoints(
-  left: any,
-  right: any,
-  width: number,
-  height: number
-): Point[] {
-  const points = [];
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = (width * y + x) << 2;
-      if (right.data[idx] === undefined || left.data[idx] === undefined) {
-        points.push([x, y]);
-        continue;
-      }
-      const dr = right.data[idx] - left.data[idx];
-      const dg = right.data[idx + 1] - left.data[idx + 1];
-      const db = right.data[idx + 2] - left.data[idx + 2];
-      if (dr || dg || db) {
-        points.push([x, y]);
-      }
+  get width(): number {
+    return this.png.width;
+  }
+  get height(): number {
+    return this.png.height;
+  }
+  async save(path: string): Promise<void> {
+    // TODO: async
+    const buffer = PNG.sync.write(this.png, { colorType: 6 });
+    fs.writeFileSync(path, buffer);
+  }
+  getPixel(x: number, y: number): number[] {
+    const i = (this.png.width * y + x) << 2;
+    const data = this.png.data;
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    if (r === undefined || g === undefined || b === undefined) {
+      return null;
+    }
+    return [r, g, b];
+  }
+  setPixel(x: number, y: number, r: number, g: number, b: number): void {
+    const i = (this.png.width * y + x) << 2;
+    const data = this.png.data;
+    if (r !== null) {
+      data[i] = r;
+    }
+    if (g !== null) {
+      data[i + 1] = g;
+    }
+    if (b !== null) {
+      data[i + 2] = b;
     }
   }
-  return points;
 }

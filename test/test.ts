@@ -6,8 +6,7 @@ import * as puppeteer from "puppeteer";
 import * as rectangles from "../src/rectangles";
 import * as index from "../src/index";
 import { Rect, DiffResultGroup } from "../src/types";
-import diff from "wu-diff-js";
-import { groupDiffResult } from "../src/png2";
+import { diff } from "../src/diff";
 
 const tmpDir = Path.resolve(__dirname, "../../tmp");
 const imageWidth = 600;
@@ -163,8 +162,8 @@ describe("rectangles", function() {
   });
   describe("#diffResultToLR()", function() {
     it("should work", async function() {
-      const result = diff(Array.from("strength"), Array.from("string"));
-      /*
+      const groups = diff(Array.from("strength"), Array.from("string"));
+      /* original result
         [
           { type: 'common', value: 's' },
           { type: 'common', value: 't' },
@@ -177,7 +176,6 @@ describe("rectangles", function() {
           { type: 'removed', value: 'h' },
         ]
       */
-      const groups = groupDiffResult(result);
       assert.equal(groups.length, 2);
       assert.equal(groups[0].type, "updated");
       assert.equal(groups[0].left.min, 3);

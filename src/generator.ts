@@ -1,4 +1,4 @@
-import { FileDiff, FileDiffs, Image, Rect } from "./types";
+import { FileDiff, FileDiffs, Image, Rect, ImageMetaInfo } from "./types";
 import * as Path from "path";
 import * as fs from "fs";
 import * as rimraf from "rimraf";
@@ -144,7 +144,11 @@ function makeSrc(
     : imagePath;
 }
 
-function generateColumn(image: Image, rects: Rect[], src: string): string {
+function generateColumn(
+  image: ImageMetaInfo,
+  rects: Rect[],
+  src: string
+): string {
   let html = "";
   html += `  <div class="col">\n`;
   if (image) {

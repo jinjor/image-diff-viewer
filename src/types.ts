@@ -7,7 +7,11 @@ export interface FilePair {
 }
 export type FileDiffType = "removed" | "added" | "updated" | "unchanged";
 export class FileDiff {
-  constructor(public left: Image, public right: Image, public rects: RectsLR) {}
+  constructor(
+    public left: ImageMetaInfo,
+    public right: ImageMetaInfo,
+    public rects: RectsLR
+  ) {}
   get type(): FileDiffType {
     if (this.left && !this.right) {
       return "removed";
@@ -42,12 +46,6 @@ export class Rect {
   }
 }
 
-export interface Image {
-  path: string;
-  width: number;
-  height: number;
-}
-
 export type Point = number[];
 
 export type Area = {
@@ -68,9 +66,22 @@ export type DiffResultGroup =
       left: Area;
       right: Area;
     };
+export interface ImageMetaInfo {
+  path: string;
+  width: number;
+  height: number;
+}
 export interface ImageChange {
-  left: Image;
-  right: Image;
+  left: ImageMetaInfo;
+  right: ImageMetaInfo;
   results: DiffResultGroup[];
 }
 export type CompareImage = (leftFile: string, rightFile: string) => ImageChange;
+
+export interface Image {
+  width: number;
+  height: number;
+  save(path: string): Promise<void>;
+  getPixel(x: number, y: number): number[];
+  setPixel(x: number, y: number, r: number, g: number, b: number): void;
+}
