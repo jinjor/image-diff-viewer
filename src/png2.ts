@@ -111,7 +111,7 @@ function tryHeuristicDiff(
   const groups = groupDiffResult(result);
   const diffResultGroups: DiffResultGroup[] = [];
   for (const group of groups) {
-    // console.log("col", type, items.length);
+    console.log("col", group.type, group.left, group.right);
     if (group.type === "updated") {
       const leftMinX = group.left.min;
       const rightMinX = group.right.min;
@@ -121,7 +121,7 @@ function tryHeuristicDiff(
       const result = diff(leftStringArray, rightStringArray);
       const groups = groupDiffResult(result);
       for (const group of groups) {
-        // console.log("  row", type, items.length);
+        console.log("  row", group.type, group.left, group.right);
         if (group.type === "updated") {
           const height = group.left.length;
           const leftMinY = group.left.min;
@@ -135,7 +135,7 @@ function tryHeuristicDiff(
             leftMinY,
             rightMinX,
             rightMinY,
-            0
+            5
           );
           diffResultGroups.push({
             type: "points",
