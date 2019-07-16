@@ -48,7 +48,19 @@ export async function compareFile(
   advanced: boolean,
   threshold: number
 ): Promise<FileDiff> {
-  console.log("comparing " + info.left + " and " + info.right);
+  let leftName = "nothing";
+  let rightName = "nothing";
+  if (info.left) {
+    leftName = Path.basename(info.left);
+  }
+  if (info.right) {
+    rightName = Path.basename(info.right);
+  }
+  if (info.left && info.right && leftName === rightName) {
+    leftName = Path.relative(".", info.left);
+    rightName = Path.relative(".", info.right);
+  }
+  console.log("comparing " + leftName + " and " + rightName);
   if (info.left && info.right && isHashEqual(info.left, info.right)) {
     console.log("hash matched");
     return new FileDiff(null, null, { left: [], right: [] });
@@ -65,13 +77,14 @@ export async function compareFile(
     width: right.width,
     height: right.height
   };
-  console.log(`${leftInfo.path} ${leftInfo.width} * ${leftInfo.height}`);
-  console.log(`${rightInfo.path} ${rightInfo.width} * ${rightInfo.height}`);
+
   let results = [];
   if (left && right) {
+    console.log(`  left: ${leftInfo.width} * ${leftInfo.height}`);
+    console.log(`  right: ${rightInfo.width} * ${rightInfo.height}`);
     let start = Date.now();
     results = png.compareImage(left, right, advanced, threshold);
-    console.log("took " + (Date.now() - start) + " ms to compare");
+    console.log("  took " + (Date.now() - start) + " ms to compare");
   }
   const change = {
     left: leftInfo,
@@ -80,7 +93,7 @@ export async function compareFile(
   };
   const start = Date.now();
   const rectsLR = await rectangles.getRects(change, clusters, padding);
-  console.log("took " + (Date.now() - start) + " ms to get rects");
+  console.log("  took " + (Date.now() - start) + " ms to get rectangles");
   return new FileDiff(change.left, change.right, rectsLR);
 }
 

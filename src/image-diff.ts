@@ -53,7 +53,6 @@ function runAdvanced(
   }
   const leftStringArray = stringifyColumns(left);
   const rightStringArray = stringifyColumns(right);
-  console.log(left.width, right.width);
   const groups = diff(leftStringArray, rightStringArray);
   const diffResultGroups: DiffResultGroup[] = [];
   for (const group of groups) {
