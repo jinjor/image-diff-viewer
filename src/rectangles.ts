@@ -23,7 +23,9 @@ export async function getRects(
         dy: result.dy,
         points: []
       };
-      allPoints[key].points.push(...result.points);
+      for (const p of result.points) {
+        allPoints[key].points.push(p);
+      }
     } else {
       if (result.left) {
         const { x, y, width, height } = result.left;
