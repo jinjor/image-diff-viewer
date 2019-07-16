@@ -26,6 +26,8 @@ export async function run(
     css: Path.resolve(__dirname, `../../assets/style.css`),
     ...options
   };
+  const advanced = true;
+  const threshold = 3;
   const filePairs: FilePairs = options.recursive
     ? files_.getFilePairsRecursively(left, right)
     : files_.getFilePairs(left, right);
@@ -35,7 +37,9 @@ export async function run(
     const fileDiff = await files_.compareFile(
       filePair,
       options.clusters,
-      options.padding
+      options.padding,
+      advanced,
+      threshold
     );
     fileDiffs[file] = fileDiff;
   }

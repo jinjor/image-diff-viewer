@@ -2,9 +2,12 @@ import { Point, DiffResultGroup, Area, Image } from "./types";
 import * as crypto from "crypto";
 import { diff } from "./diff";
 
-export function compareImage(left: Image, right: Image): DiffResultGroup[] {
-  const advanced = true;
-  const threshold = 3;
+export function compareImage(
+  left: Image,
+  right: Image,
+  advanced: boolean,
+  threshold: number
+): DiffResultGroup[] {
   if (advanced) {
     return runAdvanced(left, right, threshold);
   } else {

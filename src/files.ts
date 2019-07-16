@@ -44,10 +44,11 @@ function collectFilePairs(
 export async function compareFile(
   info: FilePair,
   clusters: number,
-  padding: number
+  padding: number,
+  advanced: boolean,
+  threshold: number
 ): Promise<FileDiff> {
   console.log("comparing " + info.left + "and " + info.right);
-
   if (info.left && info.right && isHashEqual(info.left, info.right)) {
     console.log("hash matched");
     return new FileDiff(null, null, { left: [], right: [] });
@@ -57,7 +58,7 @@ export async function compareFile(
   let results = [];
   if (left && right) {
     let start = Date.now();
-    results = png.compareImage(left, right);
+    results = png.compareImage(left, right, advanced, threshold);
     console.log("took " + (Date.now() - start) + " ms to compare");
   }
   const leftInfo = info.left && {
