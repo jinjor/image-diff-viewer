@@ -2,41 +2,8 @@ import { Point, DiffResultGroup, Area, Image } from "./types";
 import * as crypto from "crypto";
 import { diff } from "./diff";
 
-// export const compareImage: CompareImage = (
-//   leftFile?: string,
-//   rightFile?: string
-// ) => {
-//   const advanced = false;
-//   const threshold = 3;
-//   const left: Image = leftFile && new Png(leftFile);
-//   const right: Image = rightFile && new Png(rightFile);
-//   let diffResultGroups = [];
-//   if (left && right) {
-//     if (advanced) {
-//       diffResultGroups = runAdvanced(left, right, threshold);
-//     } else {
-//       diffResultGroups = runSimple(left, right, threshold);
-//     }
-//   }
-//   const leftInfo = left && {
-//     path: leftFile,
-//     width: left.width,
-//     height: left.height
-//   };
-//   const rightInfo = right && {
-//     path: rightFile,
-//     width: right.width,
-//     height: right.height
-//   };
-//   return {
-//     left: leftInfo,
-//     right: rightInfo,
-//     results: diffResultGroups
-//   };
-// };
-
 export function compareImage(left: Image, right: Image): DiffResultGroup[] {
-  const advanced = false;
+  const advanced = true;
   const threshold = 3;
   if (advanced) {
     return runAdvanced(left, right, threshold);
@@ -201,13 +168,13 @@ function saveImageForDebug(
 function stringifyRows(png: Image, minX: number, areaWidth: number): string[] {
   const height = png.height;
   const rows = [];
-  const hash = crypto.createHash("md5");
   for (let y = 0; y < height; y++) {
     let row = "";
     for (let x = minX; x < minX + areaWidth; x++) {
       const [r, g, b] = png.getPixel(x, y);
       row += `${r},${g},${b}`;
     }
+    const hash = crypto.createHash("md5");
     hash.update(row);
     rows.push(hash.digest("hex"));
   }
@@ -218,13 +185,13 @@ function stringifyColumns(png: Image): string[] {
   const width = png.width;
   const height = png.height;
   const cols = [];
-  const hash = crypto.createHash("md5");
   for (let x = 0; x < width; x++) {
     let col = "";
     for (let y = 0; y < height; y++) {
       const [r, g, b] = png.getPixel(x, y);
       col += `${r},${g},${b}`;
     }
+    const hash = crypto.createHash("md5");
     hash.update(col);
     cols.push(hash.digest("hex"));
   }
