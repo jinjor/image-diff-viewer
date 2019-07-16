@@ -45,9 +45,7 @@ export class Rect {
     );
   }
 }
-
 export type Point = number[];
-
 export type Area = {
   x: number;
   y: number;
@@ -76,8 +74,6 @@ export interface ImageChange {
   right: ImageMetaInfo;
   results: DiffResultGroup[];
 }
-export type CompareImage = (leftFile: string, rightFile: string) => ImageChange;
-
 export interface Image {
   width: number;
   height: number;

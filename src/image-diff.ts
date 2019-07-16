@@ -1,40 +1,49 @@
-import { Point, CompareImage, DiffResultGroup, Area, Image } from "./types";
+import { Point, DiffResultGroup, Area, Image } from "./types";
 import * as crypto from "crypto";
-import { Png } from "./png";
 import { diff } from "./diff";
 
-export const compareImage: CompareImage = (
-  leftFile?: string,
-  rightFile?: string
-) => {
+// export const compareImage: CompareImage = (
+//   leftFile?: string,
+//   rightFile?: string
+// ) => {
+//   const advanced = false;
+//   const threshold = 3;
+//   const left: Image = leftFile && new Png(leftFile);
+//   const right: Image = rightFile && new Png(rightFile);
+//   let diffResultGroups = [];
+//   if (left && right) {
+//     if (advanced) {
+//       diffResultGroups = runAdvanced(left, right, threshold);
+//     } else {
+//       diffResultGroups = runSimple(left, right, threshold);
+//     }
+//   }
+//   const leftInfo = left && {
+//     path: leftFile,
+//     width: left.width,
+//     height: left.height
+//   };
+//   const rightInfo = right && {
+//     path: rightFile,
+//     width: right.width,
+//     height: right.height
+//   };
+//   return {
+//     left: leftInfo,
+//     right: rightInfo,
+//     results: diffResultGroups
+//   };
+// };
+
+export function compareImage(left: Image, right: Image): DiffResultGroup[] {
   const advanced = false;
   const threshold = 3;
-  const left: Image = leftFile && new Png(leftFile);
-  const right: Image = rightFile && new Png(rightFile);
-  let diffResultGroups = [];
-  if (left && right) {
-    if (advanced) {
-      diffResultGroups = runAdvanced(left, right, threshold);
-    } else {
-      diffResultGroups = runSimple(left, right, threshold);
-    }
+  if (advanced) {
+    return runAdvanced(left, right, threshold);
+  } else {
+    return runSimple(left, right, threshold);
   }
-  const leftInfo = left && {
-    path: leftFile,
-    width: left.width,
-    height: left.height
-  };
-  const rightInfo = right && {
-    path: rightFile,
-    width: right.width,
-    height: right.height
-  };
-  return {
-    left: leftInfo,
-    right: rightInfo,
-    results: diffResultGroups
-  };
-};
+}
 
 function runSimple(
   left: Image,
