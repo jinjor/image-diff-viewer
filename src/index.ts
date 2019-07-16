@@ -26,7 +26,7 @@ export async function run(
     css: Path.resolve(__dirname, `../../assets/style.css`),
     ...options
   };
-  const advanced = true;
+  const advanced = false;
   const threshold = 3;
   const filePairs: FilePairs = options.recursive
     ? files_.getFilePairsRecursively(left, right)

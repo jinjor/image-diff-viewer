@@ -48,19 +48,13 @@ export async function compareFile(
   advanced: boolean,
   threshold: number
 ): Promise<FileDiff> {
-  console.log("comparing " + info.left + "and " + info.right);
+  console.log("comparing " + info.left + " and " + info.right);
   if (info.left && info.right && isHashEqual(info.left, info.right)) {
     console.log("hash matched");
     return new FileDiff(null, null, { left: [], right: [] });
   }
   const left = info.left ? new Png(info.left) : null;
   const right = info.right ? new Png(info.right) : null;
-  let results = [];
-  if (left && right) {
-    let start = Date.now();
-    results = png.compareImage(left, right, advanced, threshold);
-    console.log("took " + (Date.now() - start) + " ms to compare");
-  }
   const leftInfo = info.left && {
     path: info.left,
     width: left.width,
@@ -71,6 +65,14 @@ export async function compareFile(
     width: right.width,
     height: right.height
   };
+  console.log(`${leftInfo.path} ${leftInfo.width} * ${leftInfo.height}`);
+  console.log(`${rightInfo.path} ${rightInfo.width} * ${rightInfo.height}`);
+  let results = [];
+  if (left && right) {
+    let start = Date.now();
+    results = png.compareImage(left, right, advanced, threshold);
+    console.log("took " + (Date.now() - start) + " ms to compare");
+  }
   const change = {
     left: leftInfo,
     right: rightInfo,
