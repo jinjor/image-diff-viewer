@@ -30,6 +30,15 @@ export async function run(
     threshold: 0,
     ...options
   };
+  console.log("options:");
+  console.log("  recursive   :", options.recursive);
+  console.log("  output      :", options.output);
+  console.log("  outdir      :", options.outdir);
+  console.log("  padding     :", options.padding);
+  console.log("  clusters    :", options.clusters);
+  console.log("  css         :", options.css);
+  console.log("  shift-aware :", options.shiftAware);
+  console.log("  threshold   :", options.threshold);
   const filePairs: FilePairs = options.recursive
     ? files_.getFilePairsRecursively(left, right)
     : files_.getFilePairs(left, right);
