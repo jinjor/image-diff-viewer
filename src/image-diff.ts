@@ -1,4 +1,4 @@
-import { Point, DiffResultGroup, Area, Image } from "./types";
+import { Point, DiffResultGroup, Area, Image, Options } from "./types";
 import * as crypto from "crypto";
 import { diff } from "./diff";
 import * as Path from "path";
@@ -6,14 +6,12 @@ import * as Path from "path";
 export function compareImage(
   left: Image,
   right: Image,
-  advanced: boolean,
-  threshold: number,
-  ignoreSpacing: boolean
+  options: Options
 ): DiffResultGroup[] {
-  if (advanced) {
-    return runAdvanced(left, right, threshold, ignoreSpacing);
+  if (options.shiftAware) {
+    return runAdvanced(left, right, options.threshold, options.ignoreSpacing);
   } else {
-    return runSimple(left, right, threshold);
+    return runSimple(left, right, options.threshold);
   }
 }
 

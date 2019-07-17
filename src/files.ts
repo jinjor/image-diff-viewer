@@ -2,7 +2,13 @@ import * as Path from "path";
 import * as glob from "glob";
 import * as imageDiff from "./image-diff";
 import * as rectangles from "./rectangles";
-import { FilePairs, FilePair, FileDiff, DiffResultGroup } from "./types";
+import {
+  FilePairs,
+  FilePair,
+  FileDiff,
+  DiffResultGroup,
+  Options
+} from "./types";
 import * as crypto from "crypto";
 import * as fs from "fs";
 import { Png } from "./png";
@@ -43,11 +49,7 @@ function collectFilePairs(
 
 export async function compareFile(
   info: FilePair,
-  clusters: number,
-  padding: number,
-  advanced: boolean,
-  threshold: number,
-  ignoreSpacing: boolean
+  options: Options
 ): Promise<FileDiff> {
   let leftName = "nothing";
   let rightName = "nothing";
@@ -84,13 +86,7 @@ export async function compareFile(
     console.log(`  left: ${leftInfo.width} * ${leftInfo.height}`);
     console.log(`  right: ${rightInfo.width} * ${rightInfo.height}`);
     let start = Date.now();
-    results = imageDiff.compareImage(
-      left,
-      right,
-      advanced,
-      threshold,
-      ignoreSpacing
-    );
+    results = imageDiff.compareImage(left, right, options);
     console.log("  took " + (Date.now() - start) + " ms to compare");
   }
   const change = {
@@ -99,7 +95,7 @@ export async function compareFile(
     results
   };
   const start = Date.now();
-  const rectsLR = await rectangles.getRects(change, clusters, padding);
+  const rectsLR = await rectangles.getRects(change, options);
   console.log("  took " + (Date.now() - start) + " ms to get rectangles");
   return new FileDiff(change.left, change.right, rectsLR);
 }

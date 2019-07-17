@@ -154,8 +154,10 @@ describe("rectangles", function() {
             right,
             results: [{ type: "points", points }] as DiffResultGroup[]
           },
-          4,
-          20
+          {
+            clusters: 4,
+            padding: 20
+          }
         );
       }
     });

@@ -1,10 +1,9 @@
 import * as clusterizer from "./clusterizer";
-import { Rect, ImageChange, Point, RectsLR } from "./types";
+import { Rect, ImageChange, Point, RectsLR, Options } from "./types";
 
 export async function getRects(
   change: ImageChange,
-  numberOfClusters: number,
-  padding: number
+  options: Options
 ): Promise<RectsLR> {
   if (!change.left || !change.right) {
     return { left: [], right: [] };
@@ -41,9 +40,9 @@ export async function getRects(
   }
   for (const key in allPoints) {
     const result = allPoints[key];
-    const clusters = await clusterizer.run(result.points, numberOfClusters);
+    const clusters = await clusterizer.run(result.points, options.clusters);
     const overlappingRects = clusters.map(vectors => {
-      return makeRect(width, height, vectors, padding);
+      return makeRect(width, height, vectors, options.padding);
     });
     const leftRects = mergeRects(overlappingRects);
     const rightRects = leftRects.map(r => {

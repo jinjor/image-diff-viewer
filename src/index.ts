@@ -1,19 +1,7 @@
 import * as generator from "./generator";
 import * as files_ from "./files";
 import * as Path from "path";
-import { FilePairs, FileDiffs } from "./types";
-
-export interface Options {
-  recursive?: boolean;
-  output?: string;
-  outdir?: string;
-  padding?: number;
-  clusters?: number;
-  css?: string;
-  shiftAware?: boolean;
-  threshold?: number;
-  ignoreSpacing?: boolean;
-}
+import { FilePairs, FileDiffs, Options } from "./types";
 
 export async function run(
   left: string,
@@ -48,14 +36,7 @@ export async function run(
   const fileDiffs: FileDiffs = {};
   for (let file in filePairs) {
     const filePair = filePairs[file];
-    const fileDiff = await files_.compareFile(
-      filePair,
-      options.clusters,
-      options.padding,
-      options.shiftAware,
-      options.threshold,
-      options.ignoreSpacing
-    );
+    const fileDiff = await files_.compareFile(filePair, options);
     fileDiffs[file] = fileDiff;
   }
   const leftBaseDir = options.recursive ? left : Path.resolve(".");

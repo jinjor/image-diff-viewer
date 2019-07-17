@@ -1,6 +1,18 @@
 export type FilePairs = { [s: string]: FilePair };
 export type FileDiffs = { [s: string]: FileDiff };
 
+export interface Options {
+  recursive?: boolean;
+  output?: string;
+  outdir?: string;
+  padding?: number;
+  clusters?: number;
+  css?: string;
+  shiftAware?: boolean;
+  threshold?: number;
+  ignoreSpacing?: boolean;
+}
+
 export interface FilePair {
   left?: string;
   right?: string;
