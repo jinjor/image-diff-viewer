@@ -89,6 +89,7 @@ function runAdvanced(
             points: pointsInRect
           });
         } else {
+          const ignoreSameColor = true;
           let leftArea = null;
           let rightArea = null;
           if (group.left) {
@@ -100,6 +101,14 @@ function runAdvanced(
             const minY = group.right.min;
             const height = group.right.length;
             rightArea = { x: rightMinX, y: minY, width, height };
+          }
+          if (ignoreSameColor && (!group.left || !group.right)) {
+            if (group.left && isAllPixelSameColor(left, leftArea)) {
+              leftArea = null;
+            }
+            if (group.right && isAllPixelSameColor(right, rightArea)) {
+              rightArea = null;
+            }
           }
           diffResultGroups.push({
             type: "area",
@@ -130,6 +139,22 @@ function runAdvanced(
   }
   saveImageForDebug(left, right, diffResultGroups);
   return diffResultGroups;
+}
+
+function isAllPixelSameColor(image: Image, area: Area): boolean {
+  let r = null;
+  let g = null;
+  let b = null;
+  for (let y = area.y; y < area.y + area.height; y++) {
+    for (let x = area.x; x < area.x + area.width; x++) {
+      const c = image.getPixel(x, y);
+      if (r !== null && (c[0] !== r || c[1] !== g || c[2] !== b)) {
+        return false;
+      }
+      [r, g, b] = c;
+    }
+  }
+  return true;
 }
 
 function saveImageForDebug(
