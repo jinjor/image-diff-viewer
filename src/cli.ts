@@ -35,6 +35,16 @@ argv.option({
   type: "string",
   description: ""
 });
+argv.option({
+  name: "shift-aware",
+  type: "boolean",
+  description: ""
+});
+argv.option({
+  name: "threshold",
+  type: "number",
+  description: ""
+});
 
 const args = argv.run();
 index.run(args.targets[0], args.targets[1], args.options).catch(e => {

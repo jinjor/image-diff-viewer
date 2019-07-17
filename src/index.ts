@@ -10,6 +10,8 @@ export interface Options {
   padding?: number;
   clusters?: number;
   css?: string;
+  ["shift-aware"]?: boolean;
+  threshold?: number;
 }
 
 export async function run(
@@ -24,10 +26,10 @@ export async function run(
     padding: 20,
     clusters: 4,
     css: Path.resolve(__dirname, `../../assets/style.css`),
+    ["shift-aware"]: false,
+    threshold: 0,
     ...options
   };
-  const advanced = true;
-  const threshold = 3;
   const filePairs: FilePairs = options.recursive
     ? files_.getFilePairsRecursively(left, right)
     : files_.getFilePairs(left, right);
@@ -38,8 +40,8 @@ export async function run(
       filePair,
       options.clusters,
       options.padding,
-      advanced,
-      threshold
+      options["shift-aware"],
+      options.threshold
     );
     fileDiffs[file] = fileDiff;
   }
