@@ -198,13 +198,17 @@ function saveImageForDebug(
   );
 }
 
-function stringifyRows(png: Image, minX: number, areaWidth: number): string[] {
-  const height = png.height;
+function stringifyRows(
+  image: Image,
+  minX: number,
+  areaWidth: number
+): string[] {
+  const height = image.height;
   const rows = [];
   for (let y = 0; y < height; y++) {
     let row = "";
     for (let x = minX; x < minX + areaWidth; x++) {
-      const [r, g, b] = png.getPixel(x, y);
+      const [r, g, b] = image.getPixel(x, y);
       row += `${r},${g},${b}`;
     }
     const hash = crypto.createHash("md5");
@@ -214,14 +218,14 @@ function stringifyRows(png: Image, minX: number, areaWidth: number): string[] {
   return rows;
 }
 
-function stringifyColumns(png: Image): string[] {
-  const width = png.width;
-  const height = png.height;
+function stringifyColumns(image: Image): string[] {
+  const width = image.width;
+  const height = image.height;
   const cols = [];
   for (let x = 0; x < width; x++) {
     let col = "";
     for (let y = 0; y < height; y++) {
-      const [r, g, b] = png.getPixel(x, y);
+      const [r, g, b] = image.getPixel(x, y);
       col += `${r},${g},${b}`;
     }
     const hash = crypto.createHash("md5");
@@ -231,25 +235,25 @@ function stringifyColumns(png: Image): string[] {
   return cols;
 }
 function modifyAreaColor(
-  png: Image,
+  image: Image,
   area: Area,
   color: "r" | "g" | "y" | "fill"
 ): void {
   const { x, y, width, height } = area;
   for (let i = x; i < x + width; i++) {
     for (let j = y; j < y + height; j++) {
-      modifyColor(png, i, j, color);
+      modifyColor(image, i, j, color);
     }
   }
 }
 function modifyColor(
-  png: Image,
+  image: Image,
   x: number,
   y: number,
   color: "r" | "g" | "y" | "fill"
 ): void {
-  let idx = (png.width * y + x) << 2;
-  let [r, g, b] = png.getPixel(x, y);
+  let idx = (image.width * y + x) << 2;
+  let [r, g, b] = image.getPixel(x, y);
   if (color === "r") {
     r = Math.min(255, r * 1.5);
     g = Math.max(0, g * 0.7);
@@ -267,7 +271,7 @@ function modifyColor(
     g = 0;
     b = 0;
   }
-  png.setPixel(x, y, r, g, b);
+  image.setPixel(x, y, r, g, b);
 }
 
 function collectPoints(

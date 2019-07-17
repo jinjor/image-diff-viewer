@@ -1,6 +1,6 @@
 import * as Path from "path";
 import * as glob from "glob";
-import * as png from "./image-diff";
+import * as imageDiff from "./image-diff";
 import * as rectangles from "./rectangles";
 import { FilePairs, FilePair, FileDiff, DiffResultGroup } from "./types";
 import * as crypto from "crypto";
@@ -84,7 +84,13 @@ export async function compareFile(
     console.log(`  left: ${leftInfo.width} * ${leftInfo.height}`);
     console.log(`  right: ${rightInfo.width} * ${rightInfo.height}`);
     let start = Date.now();
-    results = png.compareImage(left, right, advanced, threshold, ignoreSpacing);
+    results = imageDiff.compareImage(
+      left,
+      right,
+      advanced,
+      threshold,
+      ignoreSpacing
+    );
     console.log("  took " + (Date.now() - start) + " ms to compare");
   }
   const change = {
