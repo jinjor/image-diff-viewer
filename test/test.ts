@@ -18,7 +18,7 @@ function createHtml(file: string, marks: number[][]) {
   const interval = 30;
   const rows = imageHeight / interval;
   const cols = imageWidth / interval;
-  const dots = [];
+  const dots: any = [];
   for (let r = 0; r < rows; r++) {
     dots[r] = [];
     for (let c = 0; c < cols; c++) {
