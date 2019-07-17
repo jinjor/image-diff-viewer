@@ -100,9 +100,57 @@ describe("index", function() {
       output: Path.resolve(tmpDir, "left-right.html")
     });
   });
+  it("should work (shift-aware)", async function() {
+    await index.run(leftImage, rightImage, {
+      output: Path.resolve(tmpDir, "left-right.html"),
+      shiftAware: true
+    });
+  });
   it("should work (no diff)", async function() {
     await index.run(leftImage, leftCopyImage, {
       output: Path.resolve(tmpDir, "left-leftcopy.html")
+    });
+  });
+});
+describe("recursive", function() {
+  const leftHtml = Path.resolve(tmpDir, "left.html");
+  const rightHtml = Path.resolve(tmpDir, "right.html");
+
+  const leftDir = Path.resolve(tmpDir, "left");
+  const rightDir = Path.resolve(tmpDir, "right");
+  const leftImage = Path.resolve(leftDir, "a.png");
+  const leftOnlyImage = Path.resolve(leftDir, "b.png");
+  const rightImage = Path.resolve(rightDir, "a.png");
+  const rightOnlyImage = Path.resolve(rightDir, "c.png");
+  before(async function() {
+    fs.mkdirSync(leftDir, { recursive: true });
+    fs.mkdirSync(rightDir, { recursive: true });
+    createHtml(leftHtml, []);
+    createHtml(rightHtml, [[2, 2], [2, 3], [3, 11], [6, 8], [10, 17]]);
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setViewport({
+      width: imageWidth,
+      height: imageHeight
+    });
+    await makeImageFromHtml(page, leftHtml, leftImage);
+    await makeImageFromHtml(page, rightHtml, rightImage);
+    await browser.close();
+    fs.copyFileSync(leftImage, leftOnlyImage);
+    fs.copyFileSync(rightImage, rightOnlyImage);
+  });
+
+  it("should work", async function() {
+    await index.run(leftDir, rightDir, {
+      output: Path.resolve(tmpDir, "dirs.html"),
+      recursive: true
+    });
+  });
+  it("should work (shift-aware)", async function() {
+    await index.run(leftDir, rightDir, {
+      output: Path.resolve(tmpDir, "dirs.html"),
+      recursive: true,
+      shiftAware: true
     });
   });
 });
