@@ -64,8 +64,10 @@ argv.option({
 const args = argv.run();
 
 function rename(oldName: string, newName: string) {
-  args.options[newName] = args.options[oldName];
-  delete args.options[oldName];
+  if (args.options[oldName]) {
+    args.options[newName] = args.options[oldName];
+    delete args.options[oldName];
+  }
 }
 rename("shift-aware", "shiftAware");
 rename("ignore-spacing", "ignoreSpacing");
