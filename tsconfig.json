@@ -9,7 +9,7 @@
     "pretty": true,
     "noImplicitAny": true,
     "strictNullChecks": false,
-    "declaration": false,
+    "declaration": true,
     "removeComments": true,
     "noUnusedLocals": false,
     "noImplicitReturns": true,
