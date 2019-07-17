@@ -1,11 +1,4 @@
-import {
-  FileDiff,
-  FileDiffs,
-  Image,
-  Rect,
-  ImageMetaInfo,
-  Paths
-} from "./types";
+import { FileDiff, FileDiffs, Rect, Paths } from "./types";
 import * as Path from "path";
 import * as fs from "fs";
 import * as rimraf from "rimraf";
