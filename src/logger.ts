@@ -2,10 +2,10 @@ export class Logger {
   constructor(private _verbose: boolean) {}
   verbose(...args: any[]) {
     if (this._verbose) {
-      console.log(...args);
+      console.error(...args);
     }
   }
   log(...args: any[]) {
-    console.log(...args);
+    console.error(...args);
   }
 }
