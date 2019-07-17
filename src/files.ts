@@ -2,7 +2,7 @@ import * as Path from "path";
 import * as glob from "glob";
 import * as png from "./image-diff";
 import * as rectangles from "./rectangles";
-import { FilePairs, FilePair, FileDiff } from "./types";
+import { FilePairs, FilePair, FileDiff, DiffResultGroup } from "./types";
 import * as crypto from "crypto";
 import * as fs from "fs";
 import { Png } from "./png";
@@ -78,7 +78,7 @@ export async function compareFile(
     height: right.height
   };
 
-  let results = [];
+  let results: DiffResultGroup[] = [];
   if (left && right) {
     console.log(`  left: ${leftInfo.width} * ${leftInfo.height}`);
     console.log(`  right: ${rightInfo.width} * ${rightInfo.height}`);
@@ -101,7 +101,7 @@ function isHashEqual(left: string, right: string): boolean {
   return md5file(left) === md5file(right);
 }
 
-function md5file(filePath) {
+function md5file(filePath: string) {
   const target = fs.readFileSync(filePath);
   const md5hash = crypto.createHash("md5");
   md5hash.update(target);

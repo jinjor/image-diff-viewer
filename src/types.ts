@@ -29,7 +29,12 @@ export type RectsLR = {
   right: Rect[];
 };
 export class Rect {
-  constructor(public left, public top, public right, public bottom) {}
+  constructor(
+    public left: number,
+    public top: number,
+    public right: number,
+    public bottom: number
+  ) {}
   get width() {
     return this.right - this.left;
   }

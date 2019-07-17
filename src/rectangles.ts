@@ -13,7 +13,9 @@ export async function getRects(
   const height = Math.max(change.left.height, change.right.height);
   const left = [];
   const right = [];
-  const allPoints = {};
+  const allPoints: {
+    [key: string]: { dx: number; dy: number; points: Point[] };
+  } = {};
 
   for (const result of change.results) {
     if (result.type === "points") {
@@ -95,11 +97,11 @@ function mergeRects(rects: Rect[]): Rect[] {
   return rects;
 }
 function mergeRectsOnce(rects: Rect[]): Rect[] {
-  const newRects = [];
-  for (let i in rects) {
+  const newRects: Rect[] = [];
+  for (let i = 0; i < rects.length; i++) {
     const rect = rects[i];
     let merged = false;
-    for (let j in newRects) {
+    for (let j = 0; j < newRects.length; j++) {
       const newRect = newRects[j];
       if (isOverlapping(newRect, rect)) {
         newRects[j] = mergeRect(newRect, rect);
