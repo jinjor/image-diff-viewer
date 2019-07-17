@@ -46,7 +46,8 @@ export async function compareFile(
   clusters: number,
   padding: number,
   advanced: boolean,
-  threshold: number
+  threshold: number,
+  ignoreSpacing: boolean
 ): Promise<FileDiff> {
   let leftName = "nothing";
   let rightName = "nothing";
@@ -83,7 +84,7 @@ export async function compareFile(
     console.log(`  left: ${leftInfo.width} * ${leftInfo.height}`);
     console.log(`  right: ${rightInfo.width} * ${rightInfo.height}`);
     let start = Date.now();
-    results = png.compareImage(left, right, advanced, threshold);
+    results = png.compareImage(left, right, advanced, threshold, ignoreSpacing);
     console.log("  took " + (Date.now() - start) + " ms to compare");
   }
   const change = {

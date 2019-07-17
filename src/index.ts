@@ -12,6 +12,7 @@ export interface Options {
   css?: string;
   shiftAware?: boolean;
   threshold?: number;
+  ignoreSpacing?: boolean;
 }
 
 export async function run(
@@ -28,17 +29,19 @@ export async function run(
     css: Path.resolve(__dirname, `../../assets/style.css`),
     shiftAware: false,
     threshold: 0,
+    ignoreSpacing: true,
     ...options
   };
   console.log("options:");
-  console.log("  recursive   :", options.recursive);
-  console.log("  output      :", options.output);
-  console.log("  outdir      :", options.outdir);
-  console.log("  padding     :", options.padding);
-  console.log("  clusters    :", options.clusters);
-  console.log("  css         :", options.css);
-  console.log("  shift-aware :", options.shiftAware);
-  console.log("  threshold   :", options.threshold);
+  console.log("  recursive      :", options.recursive);
+  console.log("  output         :", options.output);
+  console.log("  outdir         :", options.outdir);
+  console.log("  padding        :", options.padding);
+  console.log("  clusters       :", options.clusters);
+  console.log("  css            :", options.css);
+  console.log("  shift-aware    :", options.shiftAware);
+  console.log("  threshold      :", options.threshold);
+  console.log("  ignore-spacing :", options.ignoreSpacing);
   const filePairs: FilePairs = options.recursive
     ? files_.getFilePairsRecursively(left, right)
     : files_.getFilePairs(left, right);
@@ -50,7 +53,8 @@ export async function run(
       options.clusters,
       options.padding,
       options.shiftAware,
-      options.threshold
+      options.threshold,
+      options.ignoreSpacing
     );
     fileDiffs[file] = fileDiff;
   }

@@ -45,11 +45,20 @@ argv.option({
   type: "number",
   description: ""
 });
+argv.option({
+  name: "ignore-spacing",
+  type: "boolean",
+  description: ""
+});
 
 const args = argv.run();
 
-args.options.shiftAware = args.options["shift-aware"];
-delete args.options["shift-aware"];
+function rename(oldName: string, newName: string) {
+  args.options[newName] = args.options[oldName];
+  delete args.options[oldName];
+}
+rename("shift-aware", "shiftAware");
+rename("ignore-spacing", "ignoreSpacing");
 
 index.run(args.targets[0], args.targets[1], args.options).catch(e => {
   console.error(e);

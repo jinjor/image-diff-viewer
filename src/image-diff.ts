@@ -7,10 +7,11 @@ export function compareImage(
   left: Image,
   right: Image,
   advanced: boolean,
-  threshold: number
+  threshold: number,
+  ignoreSpacing: boolean
 ): DiffResultGroup[] {
   if (advanced) {
-    return runAdvanced(left, right, threshold);
+    return runAdvanced(left, right, threshold, ignoreSpacing);
   } else {
     return runSimple(left, right, threshold);
   }
@@ -47,7 +48,8 @@ function runSimple(
 function runAdvanced(
   left: Image,
   right: Image,
-  threshold: number
+  threshold: number,
+  ignoreSpacing: boolean
 ): DiffResultGroup[] {
   if (!left || !right) {
     return null;
@@ -89,7 +91,6 @@ function runAdvanced(
             points: pointsInRect
           });
         } else {
-          const ignoreSameColor = true;
           let leftArea = null;
           let rightArea = null;
           if (group.left) {
@@ -102,7 +103,7 @@ function runAdvanced(
             const height = group.right.length;
             rightArea = { x: rightMinX, y: minY, width, height };
           }
-          if (ignoreSameColor && (!group.left || !group.right)) {
+          if (ignoreSpacing && (!group.left || !group.right)) {
             if (group.left && isAllPixelSameColor(left, leftArea)) {
               leftArea = null;
             }
