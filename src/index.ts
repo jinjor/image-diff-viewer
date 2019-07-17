@@ -1,7 +1,7 @@
 import * as generator from "./generator";
 import * as files_ from "./files";
 import * as Path from "path";
-import { FilePairs, FileDiffs, Options } from "./types";
+import { FilePairs, FileDiffs, Options, Paths } from "./types";
 
 export async function run(
   left: string,
@@ -43,10 +43,12 @@ export async function run(
   const rightBaseDir = options.recursive ? right : Path.resolve(".");
   generator.generate(
     fileDiffs,
-    options.css,
-    options.output,
-    options.outdir,
-    leftBaseDir,
-    rightBaseDir
+    new Paths(
+      options.css,
+      options.outdir,
+      options.output,
+      leftBaseDir,
+      rightBaseDir
+    )
   );
 }

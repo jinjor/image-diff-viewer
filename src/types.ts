@@ -1,3 +1,5 @@
+import * as Path from "path";
+
 export type FilePairs = { [s: string]: FilePair };
 export type FileDiffs = { [s: string]: FileDiff };
 
@@ -11,6 +13,20 @@ export interface Options {
   shiftAware?: boolean;
   threshold?: number;
   ignoreSpacing?: boolean;
+}
+
+export class Paths {
+  public outCss: string;
+  constructor(
+    public srcCss: string,
+    public outDir: string,
+    public outHtml: string,
+    public leftBaseDir: string,
+    public rightBaseDir: string
+  ) {
+    outHtml = outHtml || Path.join(outDir, "index.html");
+    this.outCss = outDir && Path.join(outDir, "style.css");
+  }
 }
 
 export interface FilePair {
