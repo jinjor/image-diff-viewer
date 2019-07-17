@@ -190,8 +190,12 @@ function saveImageForDebug(
       }
     }
   }
-  left.save(`work/debug/${Path.basename(left.path)}-left.png`);
-  right.save(`work/debug/${Path.basename(right.path)}-right.png`);
+  left.save(
+    `work/debug/${Path.basename(left.path)}`.replace(".png", "-left.png")
+  );
+  right.save(
+    `work/debug/${Path.basename(right.path)}`.replace(".png", "-right.png")
+  );
 }
 
 function stringifyRows(png: Image, minX: number, areaWidth: number): string[] {
