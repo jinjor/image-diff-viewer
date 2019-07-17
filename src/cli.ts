@@ -1,54 +1,58 @@
 #! /usr/bin/env node
 import * as index from "./index";
-const argv = require("argv");
+import * as argv from "argv";
+
 argv.option({
   name: "recursive",
   short: "r",
   type: "boolean",
-  description: ""
+  description: "Compare all files in a directory"
 });
 // deprecated, will be deleted in 2.0
 argv.option({
   name: "output",
   short: "o",
   type: "string",
-  description: ""
+  description: "The output HTML file (deprecated, use --outdir instead)"
 });
 // will be "output" in 2.0
 argv.option({
   name: "outdir",
   type: "string",
-  description: ""
+  description: "The output directory"
 });
 argv.option({
   name: "padding",
   type: "number",
-  description: ""
-});
-argv.option({
-  name: "clusters",
-  type: "number",
-  description: ""
-});
-argv.option({
-  name: "css",
-  type: "string",
-  description: ""
-});
-argv.option({
-  name: "shift-aware",
-  type: "boolean",
-  description: ""
+  description: "Determins the rectangle size (default = 20)"
 });
 argv.option({
   name: "threshold",
   type: "number",
-  description: ""
+  description:
+    "Recognizes differences if color difference exceeds threshold (default = 0)"
+});
+argv.option({
+  name: "clusters",
+  type: "number",
+  description: "Determins the number of clusters (default = 4)"
+});
+argv.option({
+  name: "css",
+  type: "string",
+  description: "Uses your custom CSS file"
+});
+argv.option({
+  name: "shift-aware",
+  type: "boolean",
+  description:
+    "(experimental) Uses the different algorithm to detect Y-direction shift"
 });
 argv.option({
   name: "ignore-spacing",
   type: "boolean",
-  description: ""
+  description:
+    "Ignores added/removed areas where all colors are the same (works with --shift-aware)"
 });
 
 const args = argv.run();
