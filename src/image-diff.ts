@@ -136,7 +136,7 @@ function runAdvanced(
       });
     }
   }
-  saveImageForDebug(left, right, diffResultGroups);
+  // saveImageForDebug(left, right, diffResultGroups);
   return diffResultGroups;
 }
 
