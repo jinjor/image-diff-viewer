@@ -114,14 +114,20 @@ function generateRow(
   html += `<a href="${hash}"><h2 class="title">${file}</h2></a>\n`;
   html += `<div class="row ${fileDiff.type}">\n`;
   html += generateColumn(
-    fileDiff.left,
-    fileDiff.rects.left,
-    makeSrc("left", fileDiff, outPath, outDirPath, leftBaseDir, rightBaseDir)
+    fileDiff,
+    "left",
+    outPath,
+    outDirPath,
+    leftBaseDir,
+    rightBaseDir
   );
   html += generateColumn(
-    fileDiff.right,
-    fileDiff.rects.right,
-    makeSrc("right", fileDiff, outPath, outDirPath, leftBaseDir, rightBaseDir)
+    fileDiff,
+    "right",
+    outPath,
+    outDirPath,
+    leftBaseDir,
+    rightBaseDir
   );
   html += `</div>\n`;
   return html;
@@ -145,13 +151,26 @@ function makeSrc(
 }
 
 function generateColumn(
-  image: ImageMetaInfo,
-  rects: Rect[],
-  src: string
+  fileDiff: FileDiff,
+  which: "left" | "right",
+  outPath: string,
+  outDirPath: string,
+  leftBaseDir: string,
+  rightBaseDir: string
 ): string {
+  const image = fileDiff[which];
+  const rects = fileDiff.rects[which];
   let html = "";
   html += `  <div class="col">\n`;
   if (image) {
+    const src = makeSrc(
+      which,
+      fileDiff,
+      outPath,
+      outDirPath,
+      leftBaseDir,
+      rightBaseDir
+    );
     const width = Math.min(image.width, maxImageWidth);
     const ratio = width / image.width;
     html += `    <div class="image-container">\n`;
