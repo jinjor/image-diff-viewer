@@ -47,6 +47,10 @@ argv.option({
 });
 
 const args = argv.run();
+
+args.options.shiftAware = args.options["shift-aware"];
+delete args.options["shift-aware"];
+
 index.run(args.targets[0], args.targets[1], args.options).catch(e => {
   console.error(e);
 });

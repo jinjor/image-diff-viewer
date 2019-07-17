@@ -10,7 +10,7 @@ export interface Options {
   padding?: number;
   clusters?: number;
   css?: string;
-  ["shift-aware"]?: boolean;
+  shiftAware?: boolean;
   threshold?: number;
 }
 
@@ -26,7 +26,7 @@ export async function run(
     padding: 20,
     clusters: 4,
     css: Path.resolve(__dirname, `../../assets/style.css`),
-    ["shift-aware"]: false,
+    shiftAware: false,
     threshold: 0,
     ...options
   };
@@ -40,7 +40,7 @@ export async function run(
       filePair,
       options.clusters,
       options.padding,
-      options["shift-aware"],
+      options.shiftAware,
       options.threshold
     );
     fileDiffs[file] = fileDiff;
