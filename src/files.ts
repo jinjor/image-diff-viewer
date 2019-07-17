@@ -12,6 +12,7 @@ import {
 import * as crypto from "crypto";
 import * as fs from "fs";
 import { Png } from "./png";
+import { Logger } from "./logger";
 
 export function getFilePairs(file1: string, file2: string): FilePairs {
   const name1 = `${Path.relative(".", file1)}`;
@@ -49,7 +50,8 @@ function collectFilePairs(
 
 export async function compareFile(
   info: FilePair,
-  options: Options
+  options: Options,
+  logger: Logger
 ): Promise<FileDiff> {
   let leftName = "nothing";
   let rightName = "nothing";
@@ -63,9 +65,9 @@ export async function compareFile(
     leftName = Path.relative(".", info.left);
     rightName = Path.relative(".", info.right);
   }
-  console.log("comparing " + leftName + " and " + rightName);
+  logger.log("comparing " + leftName + " and " + rightName);
   if (info.left && info.right && isHashEqual(info.left, info.right)) {
-    console.log("hash matched");
+    logger.verbose("hash matched");
     return new FileDiff(null, null, { left: [], right: [] });
   }
   const left = info.left ? new Png(info.left) : null;
@@ -83,11 +85,11 @@ export async function compareFile(
 
   let results: DiffResultGroup[] = [];
   if (left && right) {
-    console.log(`  left: ${leftInfo.width} * ${leftInfo.height}`);
-    console.log(`  right: ${rightInfo.width} * ${rightInfo.height}`);
+    logger.verbose(`  left: ${leftInfo.width} * ${leftInfo.height}`);
+    logger.verbose(`  right: ${rightInfo.width} * ${rightInfo.height}`);
     let start = Date.now();
     results = imageDiff.compareImage(left, right, options);
-    console.log("  took " + (Date.now() - start) + " ms to compare");
+    logger.verbose("  took " + (Date.now() - start) + " ms to compare");
   }
   const change = {
     left: leftInfo,
@@ -96,7 +98,7 @@ export async function compareFile(
   };
   const start = Date.now();
   const rectsLR = await rectangles.getRects(change, options);
-  console.log("  took " + (Date.now() - start) + " ms to get rectangles");
+  logger.verbose("  took " + (Date.now() - start) + " ms to get rectangles");
   return new FileDiff(change.left, change.right, rectsLR);
 }
 

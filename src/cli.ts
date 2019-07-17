@@ -54,6 +54,12 @@ argv.option({
   description:
     "Ignores added/removed areas where all colors are the same (works with --shift-aware)"
 });
+argv.option({
+  name: "verbose",
+  short: "v",
+  type: "boolean",
+  description: "Outputs verbose logs"
+});
 
 const args = argv.run();
 

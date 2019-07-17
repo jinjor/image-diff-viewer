@@ -13,6 +13,7 @@ export interface Options {
   shiftAware?: boolean;
   threshold?: number;
   ignoreSpacing?: boolean;
+  verbose?: boolean;
 }
 
 export class Paths {

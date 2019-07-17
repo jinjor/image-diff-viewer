@@ -2,6 +2,7 @@ import * as generator from "./generator";
 import * as files_ from "./files";
 import * as Path from "path";
 import { FilePairs, FileDiffs, Options, Paths } from "./types";
+import { Logger } from "./logger";
 
 export async function run(
   left: string,
@@ -18,25 +19,28 @@ export async function run(
     shiftAware: false,
     threshold: 0,
     ignoreSpacing: true,
+    verbose: false,
     ...options
   };
-  console.log("options:");
-  console.log("  recursive      :", options.recursive);
-  console.log("  output         :", options.output);
-  console.log("  outdir         :", options.outdir);
-  console.log("  padding        :", options.padding);
-  console.log("  clusters       :", options.clusters);
-  console.log("  css            :", options.css);
-  console.log("  shift-aware    :", options.shiftAware);
-  console.log("  threshold      :", options.threshold);
-  console.log("  ignore-spacing :", options.ignoreSpacing);
+  const logger = new Logger(options.verbose);
+  logger.verbose("options:");
+  logger.verbose("  recursive      :", options.recursive);
+  logger.verbose("  output         :", options.output);
+  logger.verbose("  outdir         :", options.outdir);
+  logger.verbose("  padding        :", options.padding);
+  logger.verbose("  clusters       :", options.clusters);
+  logger.verbose("  css            :", options.css);
+  logger.verbose("  shift-aware    :", options.shiftAware);
+  logger.verbose("  threshold      :", options.threshold);
+  logger.verbose("  ignore-spacing :", options.ignoreSpacing);
+  logger.verbose("  verbose        :", options.verbose);
   const filePairs: FilePairs = options.recursive
     ? files_.getFilePairsRecursively(left, right)
     : files_.getFilePairs(left, right);
   const fileDiffs: FileDiffs = {};
   for (let file in filePairs) {
     const filePair = filePairs[file];
-    const fileDiff = await files_.compareFile(filePair, options);
+    const fileDiff = await files_.compareFile(filePair, options, logger);
     fileDiffs[file] = fileDiff;
   }
   const leftBaseDir = options.recursive ? left : Path.resolve(".");
