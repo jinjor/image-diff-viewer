@@ -1,6 +1,7 @@
 import { Point, DiffResultGroup, Area, Image } from "./types";
 import * as crypto from "crypto";
 import { diff } from "./diff";
+import * as Path from "path";
 
 export function compareImage(
   left: Image,
@@ -163,8 +164,8 @@ function saveImageForDebug(
       }
     }
   }
-  left.save(`work/out-heulistic-before.png`);
-  right.save(`work/out-heulistic-after.png`);
+  left.save(`work/debug/${Path.basename(left.path)}-left.png`);
+  right.save(`work/debug/${Path.basename(right.path)}-right.png`);
 }
 
 function stringifyRows(png: Image, minX: number, areaWidth: number): string[] {

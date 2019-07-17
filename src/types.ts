@@ -80,6 +80,7 @@ export interface ImageChange {
   results: DiffResultGroup[];
 }
 export interface Image {
+  path: string;
   width: number;
   height: number;
   save(path: string): Promise<void>;
