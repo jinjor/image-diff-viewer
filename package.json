@@ -1,6 +1,6 @@
 {
   "name": "image-diff-viewer",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "main": "dist/src/index.js",
   "description": "Reports how images have been changed",
   "license": "MIT",
