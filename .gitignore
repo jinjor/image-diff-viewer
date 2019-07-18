@@ -11,3 +11,6 @@ work
 tmp
 index.html
 out
+
+# etc.
+.DS_Store
