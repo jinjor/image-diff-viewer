@@ -12,7 +12,8 @@
     "glob": "^7.1.2",
     "node-kmeans": "^1.1.8",
     "pngjs": "^3.3.3",
-    "rimraf": "^2.6.3"
+    "rimraf": "^2.6.3",
+    "wu-diff-js": "^0.1.7"
   },
   "devDependencies": {
     "@types/argv": "0.0.4",
@@ -24,8 +25,7 @@
     "mocha": "^6.1.4",
     "puppeteer": "^1.18.1",
     "source-map-support": "^0.5.12",
-    "typescript": "^3.5.3",
-    "wu-diff-js": "^0.1.7"
+    "typescript": "^3.5.3"
   },
   "scripts": {
     "build": "tsc -p .",
