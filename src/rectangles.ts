@@ -1,30 +1,57 @@
 import * as clusterizer from "./clusterizer";
-import { Rect, ImageChange, Point } from "./types";
+import { Rect, ImageChange, Point, RectsLR, Options } from "./types";
 
 export async function getRects(
   change: ImageChange,
-  clusters: number,
-  padding: number
-): Promise<Rect[]> {
-  const overlappingRects = await makeRects(change, clusters, padding);
-  const rects = mergeRects(overlappingRects);
-  return rects;
-}
-
-async function makeRects(
-  change: ImageChange,
-  clusters: number,
-  padding: number
-): Promise<Rect[]> {
+  options: Options
+): Promise<RectsLR> {
   if (!change.left || !change.right) {
-    return [];
+    return { left: [], right: [] };
   }
-  const results = await clusterizer.run(change.points, clusters);
   const width = Math.max(change.left.width, change.right.width);
   const height = Math.max(change.left.height, change.right.height);
-  return results.map(vectors => {
-    return makeRect(width, height, vectors, padding);
-  });
+  const left = [];
+  const right = [];
+  const allPoints: {
+    [key: string]: { dx: number; dy: number; points: Point[] };
+  } = {};
+
+  for (const result of change.results) {
+    if (result.type === "points") {
+      const key = result.dx + "_" + result.dy;
+      allPoints[key] = allPoints[key] || {
+        dx: result.dx,
+        dy: result.dy,
+        points: []
+      };
+      for (const p of result.points) {
+        allPoints[key].points.push(p);
+      }
+    } else {
+      if (result.left) {
+        const { x, y, width, height } = result.left;
+        left.push(new Rect(x, y, x + width, y + height));
+      }
+      if (result.right) {
+        const { x, y, width, height } = result.right;
+        right.push(new Rect(x, y, x + width, y + height));
+      }
+    }
+  }
+  for (const key in allPoints) {
+    const result = allPoints[key];
+    const clusters = await clusterizer.run(result.points, options.clusters);
+    const overlappingRects = clusters.map(vectors => {
+      return makeRect(width, height, vectors, options.padding);
+    });
+    const leftRects = mergeRects(overlappingRects);
+    const rightRects = leftRects.map(r => {
+      return r.shift(result.dx, result.dy);
+    });
+    left.push(...leftRects);
+    right.push(...rightRects);
+  }
+  return { left, right };
 }
 
 function makeRect(
@@ -69,11 +96,11 @@ function mergeRects(rects: Rect[]): Rect[] {
   return rects;
 }
 function mergeRectsOnce(rects: Rect[]): Rect[] {
-  const newRects = [];
-  for (let i in rects) {
+  const newRects: Rect[] = [];
+  for (let i = 0; i < rects.length; i++) {
     const rect = rects[i];
     let merged = false;
-    for (let j in newRects) {
+    for (let j = 0; j < newRects.length; j++) {
       const newRect = newRects[j];
       if (isOverlapping(newRect, rect)) {
         newRects[j] = mergeRect(newRect, rect);

@@ -7,9 +7,9 @@
     "moduleResolution": "node",
     "types": ["node"],
     "pretty": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "strictNullChecks": false,
-    "declaration": false,
+    "declaration": true,
     "removeComments": true,
     "noUnusedLocals": false,
     "noImplicitReturns": true,
@@ -17,9 +17,6 @@
     "listFiles": false,
     "preserveWatchOutput": true
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
-  ],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": []
 }

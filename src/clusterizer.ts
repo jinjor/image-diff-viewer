@@ -16,7 +16,7 @@ export async function run(
 
 function clusterize(points: Point[], clusters: number): Promise<any[]> {
   return new Promise((resolve, reject) => {
-    kmeans.clusterize(points, { k: clusters }, (err, res) => {
+    kmeans.clusterize(points, { k: clusters }, (err: Error, res: any) => {
       if (err) {
         reject(err);
       } else {

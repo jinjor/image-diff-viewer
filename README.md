@@ -8,7 +8,7 @@ Reports how images have been changed.
 
 ## Usage
 
-### Install globally and run
+### CLI
 
 ```bash
 $ npm install -g image-diff-viewer
@@ -26,7 +26,7 @@ $ image-diff-viewer -r dir1 dir2 -o index.html
 $ image-diff-viewer -r dir1 dir2 --outdir=out
 ```
 
-### Install locally and use
+### Import
 
 ```bash
 $ npm install image-diff-viewer --save-dev

@@ -5,7 +5,8 @@ import * as Path from "path";
 import * as puppeteer from "puppeteer";
 import * as rectangles from "../src/rectangles";
 import * as index from "../src/index";
-import { Rect } from "../src/types";
+import { Rect, DiffResultGroup } from "../src/types";
+import { diff } from "../src/diff";
 
 const tmpDir = Path.resolve(__dirname, "../../tmp");
 const imageWidth = 600;
@@ -17,7 +18,7 @@ function createHtml(file: string, marks: number[][]) {
   const interval = 30;
   const rows = imageHeight / interval;
   const cols = imageWidth / interval;
-  const dots = [];
+  const dots: any = [];
   for (let r = 0; r < rows; r++) {
     dots[r] = [];
     for (let c = 0; c < cols; c++) {
@@ -81,6 +82,7 @@ describe("index", function() {
   const leftCopyImage = Path.resolve(tmpDir, "leftcopy.png");
   const rightImage = Path.resolve(tmpDir, "right.png");
   before(async function() {
+    this.timeout(5000);
     createHtml(leftHtml, []);
     createHtml(rightHtml, [[2, 2], [2, 3], [3, 11], [6, 8], [10, 17]]);
     const browser = await puppeteer.launch();
@@ -99,9 +101,58 @@ describe("index", function() {
       output: Path.resolve(tmpDir, "left-right.html")
     });
   });
+  it("should work (shift-aware)", async function() {
+    await index.run(leftImage, rightImage, {
+      output: Path.resolve(tmpDir, "left-right.html"),
+      shiftAware: true
+    });
+  });
   it("should work (no diff)", async function() {
     await index.run(leftImage, leftCopyImage, {
       output: Path.resolve(tmpDir, "left-leftcopy.html")
+    });
+  });
+});
+describe("recursive", function() {
+  const leftHtml = Path.resolve(tmpDir, "left.html");
+  const rightHtml = Path.resolve(tmpDir, "right.html");
+
+  const leftDir = Path.resolve(tmpDir, "left");
+  const rightDir = Path.resolve(tmpDir, "right");
+  const leftImage = Path.resolve(leftDir, "a.png");
+  const leftOnlyImage = Path.resolve(leftDir, "b.png");
+  const rightImage = Path.resolve(rightDir, "a.png");
+  const rightOnlyImage = Path.resolve(rightDir, "c.png");
+  before(async function() {
+    this.timeout(5000);
+    fs.mkdirSync(leftDir, { recursive: true });
+    fs.mkdirSync(rightDir, { recursive: true });
+    createHtml(leftHtml, []);
+    createHtml(rightHtml, [[2, 2], [2, 3], [3, 11], [6, 8], [10, 17]]);
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setViewport({
+      width: imageWidth,
+      height: imageHeight
+    });
+    await makeImageFromHtml(page, leftHtml, leftImage);
+    await makeImageFromHtml(page, rightHtml, rightImage);
+    await browser.close();
+    fs.copyFileSync(leftImage, leftOnlyImage);
+    fs.copyFileSync(rightImage, rightOnlyImage);
+  });
+
+  it("should work", async function() {
+    await index.run(leftDir, rightDir, {
+      output: Path.resolve(tmpDir, "dirs.html"),
+      recursive: true
+    });
+  });
+  it("should work (shift-aware)", async function() {
+    await index.run(leftDir, rightDir, {
+      output: Path.resolve(tmpDir, "dirs.html"),
+      recursive: true,
+      shiftAware: true
     });
   });
 });
@@ -151,12 +202,42 @@ describe("rectangles", function() {
           {
             left,
             right,
-            points
+            results: [{ type: "points", points }] as DiffResultGroup[]
           },
-          4,
-          20
+          {
+            clusters: 4,
+            padding: 20
+          }
         );
       }
+    });
+  });
+  describe("#diffResultToLR()", function() {
+    it("should work", async function() {
+      const groups = diff(Array.from("strength"), Array.from("string"));
+      /* original result
+        [
+          { type: 'common', value: 's' },
+          { type: 'common', value: 't' },
+          { type: 'common', value: 'r' },
+          { type: 'removed', value: 'e' },
+          { type: 'added', value: 'i' },
+          { type: 'common', value: 'n' },
+          { type: 'common', value: 'g' },
+          { type: 'removed', value: 't' },
+          { type: 'removed', value: 'h' },
+        ]
+      */
+      assert.equal(groups.length, 2);
+      assert.equal(groups[0].type, "updated");
+      assert.equal(groups[0].left.min, 3);
+      assert.equal(groups[0].left.length, 1);
+      assert.equal(groups[0].right.min, 3);
+      assert.equal(groups[0].right.length, 1);
+      assert.equal(groups[1].type, "removed");
+      assert.equal(groups[1].left.min, 6);
+      assert.equal(groups[1].left.length, 2);
+      assert.equal(groups[1].right, null);
     });
   });
 });
