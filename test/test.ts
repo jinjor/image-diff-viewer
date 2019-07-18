@@ -82,6 +82,7 @@ describe("index", function() {
   const leftCopyImage = Path.resolve(tmpDir, "leftcopy.png");
   const rightImage = Path.resolve(tmpDir, "right.png");
   before(async function() {
+    this.timeout(5000);
     createHtml(leftHtml, []);
     createHtml(rightHtml, [[2, 2], [2, 3], [3, 11], [6, 8], [10, 17]]);
     const browser = await puppeteer.launch();
@@ -123,6 +124,7 @@ describe("recursive", function() {
   const rightImage = Path.resolve(rightDir, "a.png");
   const rightOnlyImage = Path.resolve(rightDir, "c.png");
   before(async function() {
+    this.timeout(5000);
     fs.mkdirSync(leftDir, { recursive: true });
     fs.mkdirSync(rightDir, { recursive: true });
     createHtml(leftHtml, []);
